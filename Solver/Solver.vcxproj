@@ -123,9 +123,8 @@
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="Configure.h" />
-    <ClInclude Include="Environment.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Output.h" />
     <ClInclude Include="Solution.h" />

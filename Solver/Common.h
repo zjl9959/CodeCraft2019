@@ -1,0 +1,36 @@
+#pragma once
+#ifndef CODE_CRAFT_2019_COMMON_H
+#define CODE_CRAFT_2019_COMMON_H
+
+#include <string>
+
+namespace codecraft2019 {
+
+/*******定义基本的数据类型********/
+#define INVALID_ID -1           // 无效的ID
+
+using ID = int;
+using Length = int;
+using Speed = int;
+using Time = int;
+enum Turn { Left, Right, Front, Invalid };
+
+/***********定义输入输出路径环境***************/
+struct Environment {
+    std::string car_path;       // 输入算例car.txt路径。
+    std::string road_path;      // 输入算例road.txt路径。
+    std::string cross_path;     // 输入算例cross.txt路径。
+    std::string answer_path;    // 输出结果answer.txt路径。
+};
+
+/**********  定义算法参数配置*****************/
+struct Configure {
+    // [TODO]增加其它配置参数。
+    double maxseconds = 10.0;           // 最大运行时间，单位秒。
+    double maxmilliseconds = 1000.0;    // 最大运行时间，单位毫秒。
+    size_t maxiter = 1 << 31;           // 最大迭代次数。
+};
+
+}
+
+#endif // !CODE_CRAFT_2019_COMMON_H
