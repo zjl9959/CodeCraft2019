@@ -8,17 +8,30 @@
 #include <vector>
 
 #include "Common.h"
+#include "Utility.h"
 
 namespace codecraft2019 {
 
 struct Road {
     ID id;                  // 道路ID
     Length length;          // 道路长度
-    Speed speed_limit;      // 道路限速
-    int road_num;           // 每方向车道数目
-    ID begin;               // 起点ID
-    ID end;                 // 终点ID
-    bool bidirection;       // 是否为双向车道
+    Speed speed;            // 道路限速
+    Channel channel;        // 每方向车道数目
+    ID from;                // 起点ID
+    ID to;                  // 终点ID
+    bool is_duplex;         // 是否为双向车道
+    Road(ID Id, Length Length, Speed Speed, Channel Channel, ID From, ID To, bool Is_duplex) :
+        id(Id), length(Length), speed(Speed), channel(Channel), from(From), to(To), is_duplex(Is_duplex) {};
+};
+
+struct Car {
+    ID id;                  // 车辆ID
+    ID from;                // 起点ID
+    ID to;                  // 终点ID
+    Speed speed;            // 最大行驶速度
+    Time plan_time;         // 计划出发时间
+    Car(ID Id, ID From, ID To, Speed Speed, Time Plan_time) :
+        id(Id), from(From), to(To), speed(Speed), plan_time(Plan_time) {};
 };
 
 struct Cross {
@@ -27,24 +40,25 @@ struct Cross {
     ID east;                // 东/右方路口
     ID west;                // 西/左方路口
     ID south;               // 南/下方路口
-};
-
-struct Car {
-    ID id;                  // 车辆ID
-    ID origin;              // 起点ID
-    ID destination;         // 终点ID
-    Speed max_speed;        // 最大行驶速度
-    Time go_time;           // 计划出发时间
+    Cross(ID Id, ID North, ID East, ID West, ID South) :id(Id), north(North), east(East), south(South) {};
 };
 
 struct Instance {
-    Instance();
-    void load(Environment &env);
-    ~Instance();
+    Instance() {};
+    Instance(Environment &env) { load(env); };
+    ~Instance() {};
+
+    bool load(Environment &env);    // 从输入路径中加载算例。
+
+    bool valid = true;    // 指示加载的算例是否合法。
 
     std::vector<Road> roads;
     std::vector<Car> cars;
     std::vector<Cross> crosses;
+
+    ZeroBasedConsecutiveIdMap<ID, ID> road_map;
+    ZeroBasedConsecutiveIdMap<ID, ID> car_map;
+    ZeroBasedConsecutiveIdMap<ID, ID> cross_map;
 };
 
 }

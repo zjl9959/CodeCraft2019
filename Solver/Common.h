@@ -13,6 +13,7 @@ using ID = int;
 using Length = int;
 using Speed = int;
 using Time = int;
+using Channel = int;
 enum Turn { Left, Right, Front, Invalid };
 
 /***********定义输入输出路径环境***************/
@@ -21,6 +22,8 @@ struct Environment {
     std::string road_path;      // 输入算例road.txt路径。
     std::string cross_path;     // 输入算例cross.txt路径。
     std::string answer_path;    // 输出结果answer.txt路径。
+    Environment(char* Car_path, char* Road_path, char* Cross_path, char* Answer_path) :
+        car_path(Car_path), road_path(Road_path), cross_path(Cross_path), answer_path(Answer_path) {};
 };
 
 /**********  定义算法参数配置*****************/

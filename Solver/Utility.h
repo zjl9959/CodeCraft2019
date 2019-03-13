@@ -414,7 +414,8 @@ public:
         static constexpr int DateBufSize = 64;
         static char buf[DateBufSize];
         time_t t = time(NULL);
-        tm *date = localtime(&t);
+        tm *date;
+        localtime_s(date, &t);
         strftime(buf, DateBufSize, format, date);
         return buf;
     }
@@ -460,7 +461,7 @@ public:
     DateTime(int year = 0, int month = 0, int day = 0, int hour = 0, int minute = 0, int second = 0)
         : year(year), month(month), day(day), hour(hour), minute(minute), second(second) {}
     DateTime(tm &t) : DateTime(t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min) {}
-    DateTime(time_t t) : DateTime(*std::localtime(&t)) {}
+    //DateTime(time_t t) : DateTime(*std::localtime(&t)) {}         // function localtime maybe unsafe.
 
     // get an inconsistent tm struct which requires std::mktime() to revise.
     operator std::tm() const {
