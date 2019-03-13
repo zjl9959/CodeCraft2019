@@ -4,6 +4,7 @@
 /*
  * 定义便于算法操作的解的结构。
  */
+
 namespace codecraft2019 {
 
 class Solution {

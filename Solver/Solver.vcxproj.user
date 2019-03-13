@@ -2,12 +2,12 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(SolutionDir)Deploy\$(TargetFileName)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config\car.txt $(SolutionDir)Deploy\Instance\config\road.txt $(SolutionDir)Deploy\Instance\config\cross.txt $(SolutionDir)Deploy\Solution\solution.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config\car.txt $(SolutionDir)Deploy\Instance\config\road.txt $(SolutionDir)Deploy\Instance\config\cross.txt $(SolutionDir)Deploy\Solution\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(SolutionDir)Deploy\$(TargetFileName)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config\car.txt $(SolutionDir)Deploy\Instance\config\road.txt $(SolutionDir)Deploy\Instance\config\cross.txt $(SolutionDir)Deploy\Solution\solution.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config\car.txt $(SolutionDir)Deploy\Instance\config\road.txt $(SolutionDir)Deploy\Instance\config\cross.txt $(SolutionDir)Deploy\Solution\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

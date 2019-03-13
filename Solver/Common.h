@@ -30,7 +30,7 @@ struct Environment {
 struct Configure {
     // [TODO]增加其它配置参数。
     double maxseconds = 10.0;           // 最大运行时间，单位秒。
-    double maxmilliseconds = 1000.0;    // 最大运行时间，单位毫秒。
+    double maxmilliseconds = 10000.0;    // 最大运行时间，单位毫秒。
     size_t maxiter = 1 << 31;           // 最大迭代次数。
 };
 

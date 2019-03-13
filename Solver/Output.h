@@ -5,12 +5,22 @@
  * 将Solution转换为官方规定的输出格式。
  * 将结果保存到指定路径的文件中。
  */
+#include "Instance.h"
+
 namespace codecraft2019 {
 
-class Output {
-public:
-    Output();
-    ~Output();
+struct Routine {
+    ID car_id;
+    Time start_time;
+    std::vector<ID> roads;
+};
+
+struct Output {
+    Output(Instance* instance): ins_(instance) {};
+    ~Output() { ins_ = nullptr; }
+    bool save(Environment &env);
+    Instance* ins_;
+    std::vector<Routine> routines;
 };
 
 }

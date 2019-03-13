@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "Instance.h"
-#include "Output.h"
+#include "Solver.h"
 
 using namespace std;
 using namespace codecraft2019;
@@ -27,9 +26,13 @@ int main(int argc, char *argv[])
 
     Environment env(argv[1], argv[2], argv[3], argv[4]);
     Instance ins(env);
+    Output output(&ins);
+    Configure cfg;
 	
-	// TODO:process
-	// TODO:write output file
+    Solver solver(&ins, &output, &env, &cfg);
+    solver.testIO();
+
+    output.save(env);
 	
 	return 0;
 }
