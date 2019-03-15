@@ -46,12 +46,12 @@ bool Instance::load(Environment & env) {
                 to = stoi(result[6]);
                 is_duplex = static_cast<bool>(stoi(result[7]));
                 roads.push_back(move(Road(
-                    road_map.toConsecutiveId(id),
+                    changeToZeroID(id,RoadMap),
                     length,
                     speed,
                     channel,
-                    cross_map.toConsecutiveId(from),
-                    cross_map.toConsecutiveId(to),
+                    changeToZeroID(from,CrossMap),
+                    changeToZeroID(to,CrossMap),
                     is_duplex
                 )));
             }
@@ -87,9 +87,9 @@ bool Instance::load(Environment & env) {
                 speed = stoi(result[4]);
                 plan_time = stoi(result[5]);
                 cars.push_back(move(Car(
-                    car_map.toConsecutiveId(id),
-                    cross_map.toConsecutiveId(from),
-                    cross_map.toConsecutiveId(to),
+					changeToZeroID(id, CarMap),
+					changeToZeroID(from, CrossMap),
+					changeToZeroID(to, CrossMap),
                     speed,
                     plan_time
                 )));
@@ -124,17 +124,22 @@ bool Instance::load(Environment & env) {
                 south = stoi(result[4]);
                 west = stoi(result[5]);
                 crosses.push_back(move(Cross(
-                    cross_map.toConsecutiveId(id),
-                    north == -1 ? -1 : road_map.toConsecutiveId(north),
-                    east == -1 ? -1 : road_map.toConsecutiveId(east),
-                    south == -1 ? -1 : road_map.toConsecutiveId(south),
-                    west == -1 ? -1 : road_map.toConsecutiveId(west)
+					changeToZeroID(id, CrossMap),
+                    north == -1 ? -1 : changeToZeroID(north, RoadMap),
+                    east == -1 ? -1 : changeToZeroID(east, RoadMap),
+                    south == -1 ? -1 : changeToZeroID(south, RoadMap),
+                    west == -1 ? -1 : changeToZeroID(west, RoadMap)
                 )));
             }
         }
         ifs.close();
     }
     return valid;
+}
+
+ID Instance::changeToZeroID(ID src,ID deta)
+{
+	return src - deta;
 }
 
 }

@@ -8,14 +8,14 @@ namespace codecraft2019 {
 
 /*******定义基本的数据类型********/
 #define INVALID_ID -1           // 无效的ID
-
+#define LENGTH_MAX INT_MAX
 using ID = int;
 using Length = int;
 using Speed = int;
 using Time = int;
 using Channel = int;
-enum Turn { Left, Right, Front, Invalid };
-
+enum Turn { Left, Right, Front, InvalidTurn };
+enum IDMap{RoadMap = 5001,CrossMap = 1,CarMap = 10000};
 /***********定义输入输出路径环境***************/
 struct Environment {
     std::string car_path;       // 输入算例car.txt路径。

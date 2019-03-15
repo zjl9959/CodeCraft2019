@@ -55,7 +55,7 @@ struct Instance {
     std::vector<Road> roads;
     std::vector<Car> cars;
     std::vector<Cross> crosses;
-
+	ID changeToZeroID(ID src,ID deta);
     ZeroBasedConsecutiveIdMap<ID, ID> road_map;
     ZeroBasedConsecutiveIdMap<ID, ID> car_map;
     ZeroBasedConsecutiveIdMap<ID, ID> cross_map;
