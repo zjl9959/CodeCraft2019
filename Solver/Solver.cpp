@@ -14,6 +14,43 @@ void Solver::testIO() {
         output_->routines[i].roads.push_back(ins_->cars[i].to);
     }
 }
+
+void Solver::init_solution()
+{
+	int car_size = ins_->cars.size();
+	ID temp,next;
+	Time total_time = 0,temp_time;
+	Speed speed;
+	//vector<Car> notPlanCar;
+	for (auto i = 0; i < car_size; ++i) {
+		Routine routine;
+		Car car = ins_->cars[i];
+		routine.car_id = car.id;
+		if (car.plan_time > total_time) {
+			routine.start_time = car.plan_time;
+		}
+		else {
+			routine.start_time = total_time;
+		}
+		temp = car.from;
+		while (temp!=car.to)
+		{
+			next = topo.pathID[temp][car.to];
+			routine.roads.push_back(topo.adjRoadID[temp][next]);
+			temp = next;
+		}
+		
+		temp_time = 0;
+		for (auto j = 0; j < routine.roads.size(); ++j) {
+			Road road = ins_->roads[routine.roads[j]];
+			speed = min(road.speed, car.speed);
+			temp_time += road.length / speed;
+		}
+		total_time = routine.start_time + temp_time;
+		output_->routines.push_back(routine);
+	}
+	std::cout << "the cost time is" << total_time << std::endl;
+}
     
 void Topo::Floyd()
 {
@@ -38,17 +75,20 @@ void Topo::printPath()
 	int row = 0;
 	int col = 0;
 	int temp = 0;
+	ID next;
 	for (row = 0; row < this->vexnum; row++) {
 		for (col = row + 1; col < this->vexnum; col++) {
 			cout << "v" << to_string(row + 1) << "---" << "v" << to_string(col + 1) << " weight: "
-				<< sPathLen[row][col] << " path: " << " v" << to_string(row + 1);
-			temp = pathID[row][col];
+				<< sPathLen[row][col] << " path: ";
+			temp = row;
 			//循环输出途径的每条路径。
 			while (temp != col) {
-				cout << "-->" << "v" << to_string(temp + 1);
-				temp = pathID[temp][col];
+				//cout << "-->" << "v" << to_string(temp + 1);
+				next = pathID[temp][col];
+				cout << ins_->changeToOriginalID(adjRoadID[temp][next],RoadMap) << ", ";
+				temp = next;
 			}
-			cout << "-->" << "v" << to_string(col + 1) << endl;
+			cout << endl;
 		}
 
 		cout << endl;

@@ -142,4 +142,9 @@ ID Instance::changeToZeroID(ID src,ID deta)
 	return src - deta;
 }
 
+ID Instance::changeToOriginalID(ID src, ID deta)
+{
+	return src + deta;
+}
+
 }

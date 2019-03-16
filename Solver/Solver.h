@@ -41,14 +41,8 @@ public:
 				sPathLen[to][from] = ins->roads[i].length;
 			}
 		}
-		for (int i = 0; i < vexnum; ++i) {
-			for (int j = 0; j < vexnum; ++j) {
-				if(sPathLen[i][j]!=LENGTH_MAX)
-				std::cout << i + 1 << " " << j + 1 << " " << sPathLen[i][j]<<std::endl;
-			}
-		}
 		Floyd();
-		printPath();
+		//printPath();
 	};
 	void Floyd();
 	void printPath();
@@ -72,13 +66,14 @@ public:
         cfg_ = nullptr;
     };
     void testIO();
+	void init_solution();		
 protected:
     Instance* ins_;
     Output* output_;
     Environment* env_;
     Configure* cfg_;
 public:
-	Topo topo;
+	Topo topo; 
     // [TODO]添加算法用到的数据结构
 };
 

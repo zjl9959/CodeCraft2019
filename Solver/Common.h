@@ -15,7 +15,7 @@ using Speed = int;
 using Time = int;
 using Channel = int;
 enum Turn { Left, Right, Front, InvalidTurn };
-enum IDMap{RoadMap = 5001,CrossMap = 1,CarMap = 10000};
+enum IDMap{RoadMap = 5000,CrossMap = 1,CarMap = 10000};
 /***********定义输入输出路径环境***************/
 struct Environment {
     std::string car_path;       // 输入算例car.txt路径。

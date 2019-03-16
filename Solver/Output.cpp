@@ -18,10 +18,10 @@ bool Output::save(Environment & env) {
     } else {
         ofs << "#(carId,StartTime,RoadId...)" << endl;
         for (int i = 0; i < routines.size(); ++i) { // 逐行打印每辆车的规划路径。
-            ofs << "(" << ins_->car_map.toArbitraryId(routines[i].car_id)
+            ofs << "(" << ins_->changeToOriginalID( routines[i].car_id,CarMap)
                 << "," << routines[i].start_time;
             for (int j = 0; j < routines[i].roads.size(); ++j) {
-                ofs << "," << ins_->road_map.toArbitraryId(routines[i].roads[j]);
+                ofs << "," << ins_->changeToOriginalID(routines[i].roads[j],RoadMap);
             }
             ofs << ")" << endl;
         }

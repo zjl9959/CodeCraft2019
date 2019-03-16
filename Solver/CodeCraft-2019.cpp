@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     Configure cfg;
 	
     Solver solver(&ins, &output, &env, &cfg);
-    solver.testIO();
+	solver.init_solution();
 
     output.save(env);
 	
