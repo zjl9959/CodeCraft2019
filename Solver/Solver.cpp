@@ -81,31 +81,31 @@ void Solver::check_solution()
 			for (int j = 0; j < roads_num; ++j) {// 0按原方向行驶的车辆（与记录的from和to一致），1为按反方向行驶的车辆
 				for (int c = 0; c < topo.road_channel_car[r][j].size(); ++c) {//获取车道
 					for (int cL = 0; cL < topo.road_channel_car[r][j][c].size(); ++cL) {
-						CarLocationOnRoad carL = topo.road_channel_car[r][j][c][cL];//车道内的车辆id及位置
-						Speed speed = min(ins_->cars[carL.car_id].speed, road->speed);
+						CarLocationOnRoad *carL = &topo.road_channel_car[r][j][c][cL];//车道内的车辆id及位置
+						Speed speed = min(ins_->cars[carL->car_id].speed, road->speed);
 						if (cL == 0) {//说明是车道内的第一辆车
-							if (carL.location + speed > road->length) {//会出路口
-								carL.state = STATE_waitRun;
+							if (carL->location + speed > road->length) {//会出路口
+								carL->state = STATE_waitRun;
 							}
 							else {
-								carL.location = carL.location + speed;
-								carL.state = STATE_terminated;
+								carL->location = carL->location + speed;
+								carL->state = STATE_terminated;
 							}
 						}
 						else {
-							CarLocationOnRoad prev_carL = topo.road_channel_car[r][j][c][cL - 1];
-							if (prev_carL.location - carL.location > speed) {//前车距离大于该车1个时间单位内可行驶的最大距离，视作无阻挡
-								carL.location += speed;
-								carL.state = STATE_terminated;
+							CarLocationOnRoad *prev_carL = &topo.road_channel_car[r][j][c][cL - 1];
+							if (prev_carL->location - carL->location > speed) {//前车距离大于该车1个时间单位内可行驶的最大距离，视作无阻挡
+								carL->location += speed;
+								carL->state = STATE_terminated;
 							}
 							else {
-								if (prev_carL.state == STATE_terminated) {
-									speed = min(prev_carL.location - carL.location - 1, speed);
-									carL.location += speed;
-									carL.state = STATE_terminated;
+								if (prev_carL->state == STATE_terminated) {
+									speed = min(prev_carL->location - carL->location - 1, speed);
+									carL->location += speed;
+									carL->state = STATE_terminated;
 								}
 								else {
-									carL.state = STATE_waitRun;
+									carL->state = STATE_waitRun;
 								}
 							}
 						}
@@ -136,9 +136,21 @@ void Solver::check_solution()
 				//获取当前道路上的车辆，当前需要做的是确定道路内等待行驶的车辆的状态
 				//可以出路口的车辆有哪些
 				for (int c = 0; c < topo.road_channel_car[road_id][road_direction].size(); ++c) {//车道
-					for (int cL = 0; cL < topo.road_channel_car[road_id][road_direction][c].size(); ++cL) {//同一车道内的所有车辆及位置
-						
+					CarLocationOnRoad *carL = &topo.road_channel_car[road_id][road_direction][c][0];//第一优先级的车辆
+					if (carL->state == STATE_terminated) { //车道内第一辆车为终止状态，则该车道内其它车辆也可以进入终止状态
+						CarLocationOnRoad *prev_carL = carL;
+						for (int cL = 1; cL < topo.road_channel_car[road_id][road_direction][c].size(); cL++) {
+							CarLocationOnRoad *next_carL = &topo.road_channel_car[road_id][road_direction][c][cL];
+							Speed speed = min(prev_carL->location - next_carL->location - 1, ins_->cars[next_carL->car_id].speed, road->speed);
+							next_carL->location += speed;
+							next_carL->state = STATE_waitRun;
+							prev_carL = next_carL;
+						}
 					}
+					else {//车道内第一辆车为等待状态，则该车需要出路口
+
+					}
+
 				}
 			}
 		}
