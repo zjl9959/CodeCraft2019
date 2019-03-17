@@ -36,11 +36,18 @@ struct Car {
 
 struct Cross {
     ID id;                  // 交叉路口ID
-    ID north;               // 北/上方路口
-    ID east;                // 东/右方路口
-    ID west;                // 西/左方路口
-    ID south;               // 南/下方路口
-    Cross(ID Id, ID North, ID East, ID West, ID South) :id(Id), north(North), east(East), south(South) {};
+	ID road[4]; //分别为北东南西四条路
+    ID north;               // 北/上方路
+    ID east;                // 东/右方路
+    ID west;                // 西/左方路
+    ID south;               // 南/下方路
+    Cross(ID Id, ID North, ID East, ID South, ID West) :id(Id), north(North), south(South), east(East) {
+		road[0] = North;
+		road[1] = East;
+		road[2] = South;
+		road[3] = West;
+
+	};
 };
 
 struct Instance {
