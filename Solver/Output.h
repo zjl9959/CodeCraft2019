@@ -13,6 +13,7 @@ struct Routine {
     ID car_id;
     Time start_time;
     std::vector<ID> roads;
+	std::vector<ID> crosses;//由roads转换而来的路口
 };
 
 struct Output {

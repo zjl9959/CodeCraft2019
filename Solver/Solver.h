@@ -10,6 +10,12 @@
 
 namespace codecraft2019 {
 
+struct CarLocationOnRoad {
+	int car_id;
+	STATE state;
+	int location;
+};
+
 class Topo {
 public:
 	Topo(Instance *ins);
@@ -22,8 +28,9 @@ public:
 	Length **sPathLen;//最短路长度
 	Turn **RoadTurn;
 	int vexnum;
-	/*vector<vector<int>> carsWillOnRoad;
-	vector<vector<int>> carsOnRoad;*/
+	std::vector<std::vector<int>>  carsWillOnRoad;
+	std::vector<std::vector<CarLocationOnRoad>> carsOnRoad;
+	std::vector<std::vector<std::vector<std::vector<CarLocationOnRoad>>>> road_channel_car;
 protected:
 	Instance *ins_;
 };
