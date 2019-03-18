@@ -21,7 +21,7 @@ struct Output {
     ~Output() { ins_ = nullptr; }
     bool save(Environment &env);
     Instance* ins_;
-    std::vector<Routine> routines;
+    std::vector<Routine *> routines;
 };
 
 }

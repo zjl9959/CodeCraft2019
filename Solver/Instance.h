@@ -59,9 +59,9 @@ struct Instance {
 
     bool valid = true;    // 指示加载的算例是否合法。
 
-    std::vector<RawRoad> roads;
-    std::vector<RawCar> cars;
-    std::vector<RawCross> crosses;
+    std::vector<RawRoad> raw_roads;
+    std::vector<RawCar> raw_cars;
+    std::vector<RawCross> raw_crosses;
 	ID changeToZeroID(ID src,ID deta);
 	ID changeToOriginalID(ID src, ID deta);
     ZeroBasedConsecutiveIdMap<ID, ID> road_map;

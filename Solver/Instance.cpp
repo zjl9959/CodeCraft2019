@@ -23,7 +23,7 @@ bool Instance::load(Environment & env) {
         } else {
             string line;
             getline(ifs, line);         // 第一行注释不要。
-            roads.reserve(100);         // 预分配内存，防止push_back时内存不足导致vector拷贝。
+            raw_roads.reserve(100);         // 预分配内存，防止push_back时内存不足导致vector拷贝。
             ID id, from, to;
             Length length;
             Speed speed;
@@ -45,7 +45,7 @@ bool Instance::load(Environment & env) {
                 from = stoi(result[5]);
                 to = stoi(result[6]);
                 is_duplex = static_cast<bool>(stoi(result[7]));
-                roads.push_back(move(RawRoad(
+                raw_roads.push_back(move(RawRoad(
                     changeToZeroID(id,RoadMap),
                     length,
                     speed,
@@ -68,7 +68,7 @@ bool Instance::load(Environment & env) {
         } else {
             string line;
             getline(ifs, line);
-            cars.reserve(3000);
+            raw_cars.reserve(3000);
             ID id, from, to;
             Speed speed;
             Time plan_time;
@@ -86,7 +86,7 @@ bool Instance::load(Environment & env) {
                 to = stoi(result[3]);
                 speed = stoi(result[4]);
                 plan_time = stoi(result[5]);
-                cars.push_back(move(RawCar(
+                raw_cars.push_back(move(RawCar(
 					changeToZeroID(id, CarMap),
 					changeToZeroID(from, CrossMap),
 					changeToZeroID(to, CrossMap),
@@ -107,7 +107,7 @@ bool Instance::load(Environment & env) {
         } else {
             string line;
             getline(ifs, line);
-            crosses.reserve(100);
+            raw_crosses.reserve(100);
             ID id, north, east, south, west;
             regex pattern(R"(.(\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+).)");
             smatch result;
@@ -123,7 +123,7 @@ bool Instance::load(Environment & env) {
                 east = stoi(result[3]);
                 south = stoi(result[4]);
                 west = stoi(result[5]);
-                crosses.push_back(move(RawCross(
+                raw_crosses.push_back(move(RawCross(
 					changeToZeroID(id, CrossMap),
                     north == -1 ? -1 : changeToZeroID(north, RoadMap),
                     east == -1 ? -1 : changeToZeroID(east, RoadMap),
