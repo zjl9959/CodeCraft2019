@@ -12,7 +12,7 @@
 
 namespace codecraft2019 {
 
-struct Road {
+struct RawRoad {
     ID id;                  // 道路ID
     Length length;          // 道路长度
     Speed speed;            // 道路限速
@@ -20,28 +20,28 @@ struct Road {
     ID from;                // 起点ID
     ID to;                  // 终点ID
     bool is_duplex;         // 是否为双向车道
-    Road(ID Id, Length Length, Speed Speed, Channel Channel, ID From, ID To, bool Is_duplex) :
+    RawRoad(ID Id, Length Length, Speed Speed, Channel Channel, ID From, ID To, bool Is_duplex) :
         id(Id), length(Length), speed(Speed), channel(Channel), from(From), to(To), is_duplex(Is_duplex) {};
 };
 
-struct Car {
+struct RawCar {
     ID id;                  // 车辆ID
     ID from;                // 起点ID
     ID to;                  // 终点ID
     Speed speed;            // 最大行驶速度
     Time plan_time;         // 计划出发时间
-    Car(ID Id, ID From, ID To, Speed Speed, Time Plan_time) :
+    RawCar(ID Id, ID From, ID To, Speed Speed, Time Plan_time) :
         id(Id), from(From), to(To), speed(Speed), plan_time(Plan_time) {};
 };
 
-struct Cross {
+struct RawCross {
     ID id;                  // 交叉路口ID
 	ID road[4]; //分别为北东南西四条路
     ID north;               // 北/上方路
     ID east;                // 东/右方路
     ID west;                // 西/左方路
     ID south;               // 南/下方路
-    Cross(ID Id, ID North, ID East, ID South, ID West) :id(Id), north(North), south(South), east(East) {
+    RawCross(ID Id, ID North, ID East, ID South, ID West) :id(Id), north(North), south(South), east(East) {
 		road[0] = North;
 		road[1] = East;
 		road[2] = South;
@@ -59,9 +59,9 @@ struct Instance {
 
     bool valid = true;    // 指示加载的算例是否合法。
 
-    std::vector<Road> roads;
-    std::vector<Car> cars;
-    std::vector<Cross> crosses;
+    std::vector<RawRoad> roads;
+    std::vector<RawCar> cars;
+    std::vector<RawCross> crosses;
 	ID changeToZeroID(ID src,ID deta);
 	ID changeToOriginalID(ID src, ID deta);
     ZeroBasedConsecutiveIdMap<ID, ID> road_map;

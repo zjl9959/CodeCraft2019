@@ -10,4 +10,12 @@
     <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config\car.txt $(SolutionDir)Deploy\Instance\config\road.txt $(SolutionDir)Deploy\Instance\config\cross.txt $(SolutionDir)Deploy\Solution\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\answer.txt</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\answer.txt</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

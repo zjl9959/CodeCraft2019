@@ -7,33 +7,9 @@
 
 #include "Output.h"
 #include "Solution.h"
-
+#include "Topo.h"
 namespace codecraft2019 {
 
-struct CarLocationOnRoad {
-	int car_id;
-	STATE state;
-	int location;
-};
-
-class Topo {
-public:
-	Topo(Instance *ins);
-	void Floyd();
-	void printPath();
-	Turn getRoadTurn(ID cross_id, ID road1, ID road2);//获取cross的两条道路的转向
-
-	ID **adjRoadID;
-	ID **pathID;//最短路经过的crossID
-	Length **sPathLen;//最短路长度
-	Turn **RoadTurn;
-	int vexnum;
-	std::vector<std::vector<int>>  carsWillOnRoad;
-	std::vector<std::vector<CarLocationOnRoad>> carsOnRoad;
-	std::vector<std::vector<std::vector<std::vector<CarLocationOnRoad>>>> road_channel_car;
-protected:
-	Instance *ins_;
-};
 class Solver {
 public:
     Solver(Instance *ins, Output *output, Environment *env, Configure *cfg) :

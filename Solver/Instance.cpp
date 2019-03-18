@@ -15,7 +15,7 @@ bool Instance::load(Environment & env) {
     ifstream ifs;
     {/*************加载road数据****************/
         if (env.road_path.find("road") == string::npos)
-            Log(Log::Warning) << "[Warning] Road path may be wrong!" << endl;
+            Log(Log::Warning) << "[Warning] RawRoad path may be wrong!" << endl;
         ifs.open(env.road_path);
         if (!ifs.is_open()) {
             Log(Log::Fatal) << "[Fatal] Can't open road.txt!" << endl;
@@ -45,7 +45,7 @@ bool Instance::load(Environment & env) {
                 from = stoi(result[5]);
                 to = stoi(result[6]);
                 is_duplex = static_cast<bool>(stoi(result[7]));
-                roads.push_back(move(Road(
+                roads.push_back(move(RawRoad(
                     changeToZeroID(id,RoadMap),
                     length,
                     speed,
@@ -60,7 +60,7 @@ bool Instance::load(Environment & env) {
     }
     {/*************加载car数据****************/
         if (env.car_path.find("car") == string::npos)
-            Log(Log::Warning) << "[Warning] Car path may be wrong!" << endl;
+            Log(Log::Warning) << "[Warning] RawCar path may be wrong!" << endl;
         ifs.open(env.car_path);
         if (!ifs.is_open()) {
             Log(Log::Fatal) << "[Fatal] Can't open car.txt" << endl;
@@ -86,7 +86,7 @@ bool Instance::load(Environment & env) {
                 to = stoi(result[3]);
                 speed = stoi(result[4]);
                 plan_time = stoi(result[5]);
-                cars.push_back(move(Car(
+                cars.push_back(move(RawCar(
 					changeToZeroID(id, CarMap),
 					changeToZeroID(from, CrossMap),
 					changeToZeroID(to, CrossMap),
@@ -99,7 +99,7 @@ bool Instance::load(Environment & env) {
     }
     {/*************加载cross数据****************/
         if (env.cross_path.find("cross") == string::npos)
-            Log(Log::Warning) << "[Warning] Cross path may be wrong!" << endl;
+            Log(Log::Warning) << "[Warning] RawCross path may be wrong!" << endl;
         ifs.open(env.cross_path);
         if (!ifs.is_open()) {
             Log(Log::Fatal) << "[Fatal] Can't open cross.txt" << endl;
@@ -123,7 +123,7 @@ bool Instance::load(Environment & env) {
                 east = stoi(result[3]);
                 south = stoi(result[4]);
                 west = stoi(result[5]);
-                crosses.push_back(move(Cross(
+                crosses.push_back(move(RawCross(
 					changeToZeroID(id, CrossMap),
                     north == -1 ? -1 : changeToZeroID(north, RoadMap),
                     east == -1 ? -1 : changeToZeroID(east, RoadMap),
