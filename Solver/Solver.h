@@ -22,8 +22,11 @@ public:
         env_ = nullptr;
         cfg_ = nullptr;
     };
-    void testIO();	
+    void run();
+    void testIO();
+    void init();
 	void init_solution();
+    void binary_generate_solution();
 	void check_solution();
 protected:
     Instance* ins_;
@@ -31,9 +34,10 @@ protected:
     Output* output_;
     Environment* env_;
     Configure* cfg_;
-public:
+private:
 	Topo topo; 
 	Aux aux;
+    List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
     // [TODO]添加算法用到的数据结构
 };
 

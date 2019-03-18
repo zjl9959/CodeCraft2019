@@ -4,7 +4,12 @@ using namespace std;
 
 namespace codecraft2019 {
 
-	// 此函数用于测试IO的ID映射是否正确，与求解算法无关。
+void Solver::run() {
+    init();
+    // 添加算法。。。
+}
+
+// 此函数用于测试IO的ID映射是否正确，与求解算法无关。
 void Solver::testIO() {
 	output_->routines.resize(ins_->raw_cars.size());
 	for (int i = 0; i < ins_->raw_cars.size(); ++i) {
@@ -13,6 +18,27 @@ void Solver::testIO() {
 		output_->routines[i]->roads.push_back(ins_->raw_cars[i].from);
 		output_->routines[i]->roads.push_back(ins_->raw_cars[i].to);
 	}
+}
+
+// 在运行算法之前需要做一些初始化的动作。
+void Solver::init() {
+    // 保存两点之间的最短路径到shortest_paths
+    shortest_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size/3);
+    shortest_paths.resize(topo.cross_size);
+    for (ID i = 0; i < topo.cross_size; ++i) {
+        shortest_paths[i].resize(topo.cross_size);
+        for (ID j = 0; j < topo.cross_size; ++j) {
+            if (topo.pathID[i][j] != INVALID_ID) {
+                ID temp = i;
+                while (temp != j) {
+                    ID next = topo.pathID[temp][j];
+                    shortest_paths[i][j].push_back(topo.adjRoadID[temp][next]);
+                    temp = next;
+                }
+            }
+        }
+    }
+    // 其它数据的初始化。。。
 }
 
 void Solver::init_solution()
@@ -45,7 +71,7 @@ void Solver::init_solution()
 		}//计算没有拥堵时的耗时
 		InterRoutine *interR = new InterRoutine(topo.cars[i],temp_time);
 		output_->routines.push_back(routine);//使用最短路，此时routine的出发时间还未确定
-		aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
+		//aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
 	}
 
 	
@@ -78,6 +104,11 @@ void Solver::init_solution()
 		
 	}*/
 	std::cout << "the latest time is" << latest_time << std::endl;
+}
+
+// 采用二分搜索的方法产生初始解
+void Solver::binary_generate_solution() {
+
 }
 
 void Solver::check_solution()
