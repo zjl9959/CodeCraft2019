@@ -3,7 +3,7 @@
 #define CODE_CRAFT_2019_TOPO_H
 #include "Output.h"
 #include "Solution.h"
-using namespace std;
+
 namespace codecraft2019 {
 
 struct CarLocationOnRoad {
@@ -15,13 +15,13 @@ typedef struct Cross Cross;
 struct Road {
 	RawRoad *raw_road;
 	Cross *from, *to;
-	vector<vector<vector<CarLocationOnRoad *>>> channel_carL;
+	std::vector<std::vector<std::vector<CarLocationOnRoad *>>> channel_carL;
 	Road(RawRoad *raw_road,Cross *from,Cross *to):raw_road(raw_road),from(from),to(to) {
 	}
 };
 struct Cross {
 	RawCross *raw_cross;
-	vector<Road *> road;
+	std::vector<Road *> road;
 	Cross(RawCross *raw_cross) {
 		this->raw_cross = raw_cross;
 	}
@@ -39,11 +39,11 @@ struct InterRoutine {
 	InterRoutine(Car *car, Time run_time) :car(car), run_time(run_time) {}
 };
 struct Aux {
-	vector<InterRoutine *> **car_same;//出发点和起点都相同的车辆
+	std::vector<InterRoutine *> **car_same;//出发点和起点都相同的车辆
 	Aux(int cross_size) {
-		car_same = new vector<InterRoutine*>*[cross_size];
+		car_same = new std::vector<InterRoutine*>*[cross_size];
 		for (int i = 0; i < cross_size; i++) {
-			car_same[i] = new vector<InterRoutine *>[cross_size];
+			car_same[i] = new std::vector<InterRoutine *>[cross_size];
 		}
 		
 	}
@@ -56,9 +56,9 @@ public:
 	void init_myTopo();
 	Turn getRoadTurn(ID cross_id, ID road1, ID road2);//获取cross的两条道路的转向
 
-	vector<Road *> roads;
-	vector<Cross *> crosses;
-	vector<Car *> cars;
+	std::vector<Road *> roads;
+	std::vector<Cross *> crosses;
+	std::vector<Car *> cars;
 
 	Road ***adjRoad;
 
