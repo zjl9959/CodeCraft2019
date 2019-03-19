@@ -12,6 +12,8 @@ namespace codecraft2019 {
 #define LENGTH_MAX INT_MAX
 #define MAX_TIME INT_MAX
 #define MAX_CROSS_ROAD_NUM 4
+#define TURN_NUM 3
+#define LATEST_PLAN_TIME 11
 using ID = int;
 using Length = int;
 using Speed = int;
@@ -21,7 +23,7 @@ using Channel = int;
 template <typename T>
 using List = std::vector<T>;
 
-enum Turn { Left, Right, Front, InvalidTurn };
+enum Turn { Front, Left, Right,  InvalidTurn };
 enum IDMap{RoadMap = 5000,CrossMap = 1,CarMap = 10000};
 enum STATE{STATE_waitRun,STATE_terminated};
 

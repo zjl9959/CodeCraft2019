@@ -146,7 +146,7 @@ void Topo::init_myTopo()
 {
 	cars.resize(car_size);
 	crosses.resize(cross_size);
-	roads.resize(rsize);
+	roads.resize(rsize * 2);
 
 	for (int i = 0; i < car_size; ++i) {
 		Car *car = new Car(&ins_->raw_cars[i]);
@@ -165,22 +165,29 @@ void Topo::init_myTopo()
 		ID from = ins_->raw_roads[i].from;
 		ID to = ins_->raw_roads[i].to;
 		Road *road = new Road(&ins_->raw_roads[i], crosses[from], crosses[to]);
+		road->channel_carL.resize(road->raw_road->channel);
 		roads[i] = road;
 		adjRoad[from][to] = road;
-		road->channel_carL.resize(1);
+
 		if (ins_->raw_roads[i].is_duplex) {
+			Road *road = new Road(&ins_->raw_roads[i], crosses[to], crosses[from]);
+			road->channel_carL.resize(road->raw_road->channel);
+			roads[i+ rsize]= road;
 			adjRoad[to][from] = road;
-			road->channel_carL.resize(2);//说明有两个方向的路,注意与原路同向为channel_carL[0],反向为channel_carL[1]
 		}
-		for (int j = 0; j < road->channel_carL.size(); ++j) {
-			road->channel_carL[j].resize(road->raw_road->channel);
+		else {
+			roads[i + rsize] = NULL;
 		}
 	}
 	for (int i = 0; i < cross_size; ++i) {
 		RawCross *raw_cross = crosses[i]->raw_cross;
-		for (int j = 0; j < MAX_CROSS_ROAD_NUM; ++j) {
-			if (raw_cross->road[j] != INVALID_ID) {
-				crosses[i]->road.push_back(roads[raw_cross->road[j]]);
+		for (int j = 0; j < MAX_CROSS_ROAD_NUM; ++j) {//将每个路口指向该路口的道路保存下来
+			ID road_id = raw_cross->road[j];
+			if (road_id != INVALID_ID) {
+				if(roads[road_id]->to_id == raw_cross->id)
+					crosses[i]->road.push_back(roads[raw_cross->road[j]]);
+				else if(roads[road_id + rsize]->to_id == raw_cross->id)
+					crosses[i]->road.push_back(roads[road_id +rsize ]);
 			}
 		}
 		sort(crosses[i]->road.begin(), crosses[i]->road.end(), road_sort);//每个路口的车按照车辆id升序排列
