@@ -28,6 +28,9 @@ public:
 	void init_solution();
     void binary_generate_solution();
 	void check_solution();
+
+	/* 调度相关 */
+	void driveAllCarJustOnRoadToEndState(Road *road);
 protected:
     Instance* ins_;
 	Time total_time;
