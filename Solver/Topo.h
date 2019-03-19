@@ -8,8 +8,11 @@ namespace codecraft2019 {
 
 struct CarLocationOnRoad {
 	ID car_id;
-	STATE state;
-	int location;
+	STATE state;//车的状态
+	int location;//车在道路中的位置
+	int index;//当前道路在路径中的index
+	ID channel_id;
+	Turn turn;
 };
 typedef struct Cross Cross;
 typedef struct Road Road;
@@ -26,8 +29,8 @@ struct Road {
 	Cross *from, *to;
 	ID from_id, to_id;
 	std::vector<std::vector<CarLocationOnRoad *>> channel_carL;
-	std::vector<CarLocationOnRoad *> outRoadCarL[3];//驶出该路的3个方向的车辆按照优先级排序,某个方向第一优先级的车辆一定是车道内第一辆车
-	std::vector<CarLocationOnRoad *> inRoadCarL[3];//驶入该道路的3个方向的车辆
+	std::vector<CarLocationOnRoad *> waitOutCarL;
+	std::vector<CarLocationOnRoad *> willOnRoad;
 	Road(RawRoad *raw_road,Cross *from,Cross *to):raw_road(raw_road),from(from),to(to) {
 		from_id = from->raw_cross->id;
 		to_id = to->raw_cross->id;

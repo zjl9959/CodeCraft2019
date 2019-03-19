@@ -15,6 +15,9 @@ public:
     Solver(Instance *ins, Output *output, Environment *env, Configure *cfg) :
         ins_(ins), output_(output), env_(env), cfg_(cfg) ,topo(ins),
 		aux(ins_->raw_crosses.size()){
+		car_size = ins_->raw_cars.size();
+		road_size = ins_->raw_roads.size();
+		cross_size = ins_->raw_crosses.size();
 	};
     ~Solver() {
         ins_ = nullptr;
@@ -27,10 +30,14 @@ public:
     void init();
 	void init_solution();
     void binary_generate_solution();
-	void check_solution();
+	bool check_solution();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
+	void driveCarInGarage();
+	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road);//记录可能会出路口的CarL
+	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross);//根据当前路口和carL获取下一条道路的指针
+	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
 protected:
     Instance* ins_;
 	Time total_time;
@@ -41,6 +48,9 @@ private:
 	Topo topo; 
 	Aux aux;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
+	int car_size ;
+	int road_size ;
+	int cross_size;
     // [TODO]添加算法用到的数据结构
 };
 
