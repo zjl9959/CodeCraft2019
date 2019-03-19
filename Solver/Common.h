@@ -11,6 +11,7 @@ namespace codecraft2019 {
 #define LENGTH_MAX INT_MAX
 #define MAX_TIME INT_MAX
 #define MAX_CROSS_ROAD_NUM 4
+#define LATEST_PLAN_TIME 11
 using ID = int;
 using Length = int;
 using Speed = int;
