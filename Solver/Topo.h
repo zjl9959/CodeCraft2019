@@ -12,6 +12,15 @@ struct CarLocationOnRoad {
 	int location;
 };
 typedef struct Cross Cross;
+typedef struct Road Road;
+
+struct Cross {
+	RawCross *raw_cross;
+	std::vector<Road *> road;
+	Cross(RawCross *raw_cross) {
+		this->raw_cross = raw_cross;
+	}
+};
 struct Road {
 	RawRoad *raw_road;
 	Cross *from, *to;
@@ -25,13 +34,7 @@ struct Road {
 	}
 
 };
-struct Cross {
-	RawCross *raw_cross;
-	std::vector<Road *> road;
-	Cross(RawCross *raw_cross) {
-		this->raw_cross = raw_cross;
-	}
-};
+
 struct Car{
 	RawCar *raw_car;
 	Cross *from, *to;
@@ -45,13 +48,17 @@ struct InterRoutine {
 	InterRoutine(Car *car, Time run_time) :car(car), run_time(run_time) {}
 };
 struct Aux {
-	std::vector<InterRoutine *> **car_same;//出发点和起点都相同的车辆
+	std::vector<std::vector<InterRoutine *>> **car_same;//出发点和起点及计划出发时间都相同的车辆
 	Aux(int cross_size) {
-		car_same = new std::vector<InterRoutine*>*[cross_size];
+		car_same = new std::vector<std::vector<InterRoutine *>>*[cross_size];
 		for (int i = 0; i < cross_size; i++) {
-			car_same[i] = new std::vector<InterRoutine *>[cross_size];
+			car_same[i] = new std::vector<std::vector<InterRoutine *>>[cross_size];
 		}
-		
+		for (int i = 0; i < cross_size; i++) {
+			for (int j = 0; j < cross_size; ++j) {
+				car_same[i][j].resize(LATEST_PLAN_TIME);
+			}
+		}
 	}
 };
 class Topo {

@@ -71,7 +71,7 @@ void Solver::init_solution()
 		}//计算没有拥堵时的耗时
 		InterRoutine *interR = new InterRoutine(topo.cars[i],temp_time);
 		output_->routines.push_back(routine);//使用最短路，此时routine的出发时间还未确定
-		//aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
+		aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
 	}
 
 	
