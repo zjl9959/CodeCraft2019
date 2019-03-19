@@ -15,9 +15,15 @@ typedef struct Cross Cross;
 struct Road {
 	RawRoad *raw_road;
 	Cross *from, *to;
-	std::vector<std::vector<std::vector<CarLocationOnRoad *>>> channel_carL;
+	ID from_id, to_id;
+	std::vector<std::vector<CarLocationOnRoad *>> channel_carL;
+	std::vector<CarLocationOnRoad *> outRoadCarL[3];//驶出该路的3个方向的车辆按照优先级排序,某个方向第一优先级的车辆一定是车道内第一辆车
+	std::vector<CarLocationOnRoad *> inRoadCarL[3];//驶入该道路的3个方向的车辆
 	Road(RawRoad *raw_road,Cross *from,Cross *to):raw_road(raw_road),from(from),to(to) {
+		from_id = from->raw_cross->id;
+		to_id = to->raw_cross->id;
 	}
+
 };
 struct Cross {
 	RawCross *raw_cross;
@@ -62,7 +68,7 @@ public:
 
 	Road ***adjRoad;
 
-	ID **adjRoadID;
+	ID **adjRoadID;//两个路口之间的道路ID（原始道路）
 	ID **pathID;//最短路经过的crossID
 	Length **sPathLen;//最短路长度
 	Turn **RoadTurn;

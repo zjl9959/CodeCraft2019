@@ -129,67 +129,21 @@ void Solver::check_solution()
 			for (int r = 0; r < road_size; ++r) {
 				/* 对所有车道进行调整  */
 				Road *road = topo.roads[r];
-				int roads_num = road->raw_road->is_duplex ? 2 : 1;//双向车道和单向车道
-				for (int j = 0; j < roads_num; ++j) {// 0按原方向行驶的车辆（与记录的from和to一致），1为按反方向行驶的车辆
-					for (int c = 0; c < road->channel_carL[j].size(); ++c) {//获取车道
-						for (int cL = 0; cL < road->channel_carL[j][c].size(); ++cL) {
-							CarLocationOnRoad *carL = road->channel_carL[j][c][cL];//车道内的车辆id及位置
-							Speed speed = min(ins_->raw_cars[carL->car_id].speed, road->raw_road->speed);
-							if (cL == 0) {//说明是车道内的第一辆车
-								if (carL->location + speed > road->raw_road->length) {//会出路口
-									carL->state = STATE_waitRun;
-								}
-								else {
-									carL->location = carL->location + speed;
-									carL->state = STATE_terminated;
-								}
-							}
-							else {
-								CarLocationOnRoad *prev_carL = road->channel_carL[j][c][cL - 1];
-								if (prev_carL->location - carL->location > speed) {//前车距离大于该车1个时间单位内可行驶的最大距离，视作无阻挡
-									carL->location += speed;
-									carL->state = STATE_terminated;
-								}
-								else {
-									if (prev_carL->state == STATE_terminated) {
-										speed = min(prev_carL->location - carL->location - 1, speed);
-										carL->location += speed;
-										carL->state = STATE_terminated;
-									}
-									else {
-										carL->state = STATE_waitRun;
-									}
-								}
-							}
-						}
-					}
-				}
+				driveAllCarJustOnRoadToEndState(road);
 			}
 
-			for (int c = 0; c < cross_size; ++c) {
+			for (int c = 0; c < cross_size; ++c) {//按照ID升序调度各个路口
 				Cross *cross = topo.crosses[c];
-				for (int k = 0; k <cross->road.size(); ++k) {//经过ID排序的road
+				for (int k = 0; k <cross->road.size(); ++k) {//按照ID升序对road进行调度
 					Road *road = cross->road[k];
-					int road_direction;
-
-					/* 判断道路的方向 */
-					if (road->to == cross) {
-						road_direction = 0;
-					}
-					else if (road->raw_road->is_duplex && road->from == cross) {
-						road_direction = 1;
-					}
-					else {//说明该道路无法出路口
-						continue;
-					}
 					//获取当前道路上的车辆，当前需要做的是确定道路内等待行驶的车辆的状态
 					//可以出路口的车辆有哪些
-					for (int c = 0; c < road->channel_carL[road_direction].size(); ++c) {//车道
-						CarLocationOnRoad *carL = road->channel_carL[road_direction][c][0];//第一优先级的车辆
+					for (int c = 0; c < road->channel_carL.size(); ++c) {//车道
+						CarLocationOnRoad *carL = road->channel_carL[c][0];//某一个车道内的第一辆车
 						if (carL->state == STATE_terminated) { //车道内第一辆车为终止状态，则该车道内其它车辆也可以进入终止状态
 							CarLocationOnRoad *prev_carL = carL;
-							for (int cL = 1; cL < road->channel_carL[road_direction][c].size(); cL++) {
-								CarLocationOnRoad *next_carL = road->channel_carL[road_direction][c][cL];
+							for (int cL = 1; cL < road->channel_carL[c].size(); cL++) {
+								CarLocationOnRoad *next_carL = road->channel_carL[c][cL];
 								Speed speed = min(prev_carL->location - next_carL->location - 1,ins_->raw_cars[next_carL->car_id].speed);
 								speed = min(speed, road->raw_road->speed);
 								next_carL->location += speed;
@@ -198,7 +152,7 @@ void Solver::check_solution()
 							}
 						}
 						else {//车道内第一辆车为等待状态，则该车需要出路口
-
+							
 						}
 
 					}
@@ -211,5 +165,41 @@ void Solver::check_solution()
 			}
 		}
 	}
+
+void Solver::driveAllCarJustOnRoadToEndState(Road *road)
+{
+	for (int c = 0; c < road->channel_carL.size(); ++c) {//获取车道
+		for (int cL = 0; cL < road->channel_carL[c].size(); ++cL) {
+			CarLocationOnRoad *carL = road->channel_carL[c][cL];//车道内的车辆id及位置
+			Speed speed = min(ins_->raw_cars[carL->car_id].speed, road->raw_road->speed);
+			if (cL == 0) {//说明是车道内的第一辆车
+				if (carL->location + speed > road->raw_road->length) {//会出路口
+					carL->state = STATE_waitRun;
+				}
+				else {
+					carL->location = carL->location + speed;
+					carL->state = STATE_terminated;
+				}
+			}
+			else {
+				CarLocationOnRoad *prev_carL = road->channel_carL[c][cL - 1];
+				if (prev_carL->location - carL->location > speed) {//前车距离大于该车1个时间单位内可行驶的最大距离，视作无阻挡
+					carL->location += speed;
+					carL->state = STATE_terminated;
+				}
+				else {
+					if (prev_carL->state == STATE_terminated) {
+						speed = min(prev_carL->location - carL->location - 1, speed);
+						carL->location += speed;
+						carL->state = STATE_terminated;
+					}
+					else {
+						carL->state = STATE_waitRun;
+					}
+				}
+			}
+		}
+	}
+}
 
 }
