@@ -3,6 +3,7 @@
 #define CODE_CRAFT_2019_COMMON_H
 
 #include <string>
+#include <vector>
 
 namespace codecraft2019 {
 
@@ -17,6 +18,10 @@ using Length = int;
 using Speed = int;
 using Time = int;
 using Channel = int;
+
+template <typename T>
+using List = std::vector<T>;
+
 enum Turn { Left, Right, Front, InvalidTurn };
 enum IDMap{RoadMap = 5000,CrossMap = 1,CarMap = 10000};
 enum STATE{STATE_waitRun,STATE_terminated};
