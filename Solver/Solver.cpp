@@ -119,48 +119,62 @@ void Solver::init_solution()
 	std::cout << "the latest time is" << latest_time << std::endl;
 }
 
-void Solver::init_solution_once() {
-	int car_size = ins_->raw_cars.size();
-	ID temp, next;
-	Time  temp_time;
-	Speed speed;
-	//vector<Car> notPlanCar;
-	for (auto i = 0; i < car_size; ++i) {
-		Routine *routine = new Routine;
-		RawCar car = ins_->raw_cars[i];
-		routine->car_id = car.id;
-		routine->start_time = car.plan_time;
-		temp = car.from;
-		while (temp != car.to)
-		{
-			next = topo.pathID[temp][car.to];
-			routine->roads.push_back(topo.adjRoadID[temp][next]);
-			temp = next;
-		}
 
-		temp_time = 0;
-		for (auto j = 0; j < routine->roads.size(); ++j) {
-			RawRoad road = ins_->raw_roads[routine->roads[j]];
-			speed = min(road.speed, car.speed);
-			temp_time += road.length / speed;
-		}
-		total_time += temp_time;
-		output_->routines.push_back(routine);
-	}
-	std::cout << "the cost time is " << total_time << std::endl;
-}
-/* 
- * 同时出发一定数目车辆，待车辆完全到达终点后再出发下一批车辆,直到所有车辆都规划路线。
- * 每辆车的路线默认是走最短路径，默认车不会产生拥堵（或拥堵时间为理想时间的一半）。
- * 每构造一个解【可能不合法】，都调用一次checker，如果解合法，加大计划出发车数目，否则减少数目。
- */
+// 构造初始解版本二
 void Solver::binary_generate_solution() {
-    int car_num_left = 1;               // 二分搜索左边指针
-    int car_num_right = topo.car_size;  // 二分搜索右边指针
-    while (car_num_left < car_num_right) {
-        int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
-        // TODO....
+    int car_num_left = 1;
+    int car_num_right = topo.car_size;
+    const int total_car_num = ins_->raw_cars.size();
+    vector<Time> best_start_times;              // 最优的车辆出发时间
+    best_start_times.reserve(total_car_num);
+    Time best_schdeule_time = MAX_TIME;
+    vector<pair<Time, ID>> cars_run_time;         // 计算每辆车在路上最少花费的时间（车走最短路线）。
+    cars_run_time.reserve(total_car_num);
+    for (auto car = ins_->raw_cars.begin(); car != ins_->raw_cars.end(); ++car) {
+        cars_run_time.push_back(make_pair(
+            min_time_cost(car->id, car->from, car->to), car->id));
     }
+    //auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
+    auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
+    sort(cars_run_time.begin(), cars_run_time.end(), cmp_greater);  // 在路上耗时少的车辆先出发。
+    while (car_num_left < car_num_right) {      // 二分调参大法
+        int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+        vector<Time> start_times;
+        start_times.reserve(total_car_num);
+        priority_queue<pair<Time, ID>, vector<pair<Time,ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
+        int start_car_num = 0;
+        Time current_time = 0;
+        while (start_car_num < total_car_num) { // 按照不同的参数配置为每辆车设置出发时间。
+            for (auto it = cars_run_time.rbegin(); it != cars_run_time.rend() && pqueue.size() < car_num_mid; ++it) {
+                ID car_id = cars_run_time.back().second;
+                if (ins_->raw_cars[car_id].plan_time <= current_time) {
+                    pqueue.push(make_pair(cars_run_time.back().first + current_time, car_id));
+                    start_times[car_id] = current_time;
+                    ++start_car_num;
+                    cars_run_time.pop_back();
+                }
+            }
+            while (!pqueue.empty()) {           // 弹出到达目的地的车辆
+                if (pqueue.top().first <= current_time) {
+                    pqueue.pop();
+                } else {
+                    break;
+                }
+            }
+            current_time++;
+        }
+        // [TODO]这里得把解得参数给传过去
+        if (check_solution()) {                 // 解是合法的，说明可以提高car_num_mid
+            car_num_left = car_num_mid + 1;
+            if (current_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
+                best_schdeule_time = current_time;
+                best_start_times.swap(start_times);
+            }
+        } else {
+            car_num_right = car_num_mid - 1;
+        }
+    }
+    // [TODO] 最后将初始解转换成需要的形式。
 }
 
 bool Solver::check_solution()
@@ -538,5 +552,59 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 	return false;
 }
 
+// 计算一辆车从一个路口到另一个路口的最短耗时（假设不会堵车）
+Time Solver::min_time_cost(const ID car, const ID from, const ID to) const {
+    Time time_cost = 0;
+    const Speed car_speed = ins_->raw_cars[car].speed;
+    Length run_more_length = 0;
+    for (auto road = shortest_paths[from][to].begin();
+        road != shortest_paths[from][to].end(); ++road) {
+        Length this_road_length = ins_->raw_roads[*road].length - run_more_length;
+        if (this_road_length <= 0) {        // 跑得贼鸡儿快，都过了下一个路口了。
+            run_more_length = 0;            // 如果道路长度大于道路最高限速，这种情况就不会发生。
+            continue;
+        }
+        Speed this_road_speed = ins_->raw_roads[*road].speed;
+        Speed next_road_speed = ins_->raw_roads[*(road + 1)].speed;
+        Time this_road_cost_time = this_road_length / min(this_road_speed, car_speed);
+        Length this_road_left_length =  // this_road_cost_time时间单位后，到达当前路口所剩余的距离。
+            this_road_length - this_road_cost_time * min(this_road_speed, car_speed);
+        run_more_length = min(next_road_speed, car_speed) > this_road_left_length ? // 在下一条道路上能够走的距离
+            min(next_road_speed, car_speed) - this_road_left_length : 0;
+        time_cost += (this_road_cost_time + 1);
+    }
+    return time_cost;
+}
 
+
+void Solver::init_solution_once() {
+	int car_size = ins_->raw_cars.size();
+	ID temp, next;
+	Time  temp_time;
+	Speed speed;
+	//vector<Car> notPlanCar;
+	for (auto i = 0; i < car_size; ++i) {
+		Routine *routine = new Routine;
+		RawCar car = ins_->raw_cars[i];
+		routine->car_id = car.id;
+		routine->start_time = car.plan_time;
+		temp = car.from;
+		while (temp != car.to)
+		{
+			next = topo.pathID[temp][car.to];
+			routine->roads.push_back(topo.adjRoadID[temp][next]);
+			temp = next;
+		}
+
+		temp_time = 0;
+		for (auto j = 0; j < routine->roads.size(); ++j) {
+			RawRoad road = ins_->raw_roads[routine->roads[j]];
+			speed = min(road.speed, car.speed);
+			temp_time += road.length / speed;
+		}
+		total_time += temp_time;
+		output_->routines.push_back(routine);
+	}
+	std::cout << "the cost time is " << total_time << std::endl;
+}
 }

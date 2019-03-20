@@ -40,6 +40,10 @@ public:
 	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road);//记录可能会出路口的CarL
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross);//根据当前路口和carL获取下一条道路的指针
 	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
+
+private:
+    /*辅助计算*/
+    Time min_time_cost(const ID car, const ID from, const ID to) const;
 protected:
     Instance* ins_;
 	Time total_time;

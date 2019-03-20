@@ -14,6 +14,19 @@ struct Routine {
     Time start_time;
     std::vector<ID> roads;
 	std::vector<ID> crosses;//由roads转换而来的路口
+    Routine() {};
+    Routine(Routine &rhs) {
+        car_id = rhs.car_id;
+        start_time = rhs.start_time;
+        roads = rhs.roads;
+        crosses = rhs.crosses;
+    }
+    Routine(Routine &&rhs) {
+        car_id = rhs.car_id;
+        start_time = rhs.start_time;
+        roads.swap(rhs.roads);
+        crosses.swap(rhs.crosses);
+    }
 };
 
 struct Output {
