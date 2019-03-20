@@ -29,11 +29,13 @@ public:
     void testIO();
     void init();
 	void init_solution();
+	void init_solution_once();
     void binary_generate_solution();
 	bool check_solution();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
+	void driveCarOnChannelToEndState(Road *road, int ch);
 	void driveCarInGarage();
 	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road);//记录可能会出路口的CarL
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross);//根据当前路口和carL获取下一条道路的指针

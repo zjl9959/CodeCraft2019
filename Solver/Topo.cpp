@@ -18,9 +18,6 @@ Topo::Topo(Instance *ins) :ins_(ins), cross_size(ins->raw_crosses.size()),rsize(
 	adjRoadID = new ID*[cross_size];
 	pathID = new ID*[cross_size];
 	RoadTurn = new Turn*[rsize];
-	carsWillOnRoad.resize(rsize);
-	carsOnRoad.resize(rsize);
-	road_channel_car.resize(rsize);
 
 	for (int i = 0; i < cross_size; ++i) {
 		sPathLen[i] = new Length[cross_size];
@@ -36,16 +33,6 @@ Topo::Topo(Instance *ins) :ins_(ins), cross_size(ins->raw_crosses.size()),rsize(
 	}
 	for (int i = 0; i < rsize; ++i) {
 		RoadTurn[i] = new Turn[rsize];
-		if (!ins->raw_roads[i].is_duplex) {
-			road_channel_car[i].resize(1);
-			road_channel_car[i][0].resize(ins->raw_roads[i].channel);
-		}
-		else {
-			road_channel_car[i].resize(2);
-			road_channel_car[i][0].resize(ins->raw_roads[i].channel);
-			road_channel_car[i][1].resize(ins->raw_roads[i].channel);//Ë«Ïò³µµÀ
-
-		}
 
 		ID from = ins->raw_roads[i].from;
 		ID to = ins->raw_roads[i].to;

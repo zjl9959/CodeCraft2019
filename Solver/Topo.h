@@ -85,9 +85,7 @@ public:
 	int cross_size;
 	int car_size;
 	int rsize;
-	std::vector<std::vector<int>>  carsWillOnRoad;
-	std::vector<std::vector<CarLocationOnRoad>> carsOnRoad;
-	std::vector<std::vector<std::vector<std::vector<CarLocationOnRoad>>>> road_channel_car;
+	std::vector<CarLocationOnRoad *> allCarLOnRoad;
 protected:
 	Instance *ins_;
 };
