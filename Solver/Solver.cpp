@@ -204,7 +204,7 @@ int Solver::check_solution()
 			j = i* 1;
 		}
 
-		for (int r = 0; r < road_size; ++r) {
+		for (int r = 0; r <double_road_size; ++r) {
 			/* 对所有车道进行调整  */
 			Road *road = topo.roads[r];
 			driveAllCarJustOnRoadToEndState(road);
@@ -338,8 +338,8 @@ int Solver::check_solution()
 					Log(FY_TEST) << "car_id: " << ins_->changeToOriginalID(carL->car_id, CarMap) << "  location: " << carL->location
 						<< "  road_id :" << ins_->changeToOriginalID(road->raw_road->id, RoadMap) <<" ch: "<<
 						carL->channel_id<<" from: "
-						<< ins_->changeToOriginalID(road->raw_road->from, CrossMap) << " to: "
-						<< ins_->changeToOriginalID(road->raw_road->to, CrossMap) << endl;
+						<< ins_->changeToOriginalID(road->from_id, CrossMap) << " to: "
+						<< ins_->changeToOriginalID(road->to_id, CrossMap) << endl;
 				}
 			}
 		}
@@ -382,6 +382,7 @@ void Solver::driveCarOnChannelToEndState(Road *road, int ch) {
 }
 void Solver::driveAllCarJustOnRoadToEndState(Road *road)
 {
+	if (road == NULL) return;
 	for (int c = 0; c < road->channel_carL.size(); ++c) {//获取车道
 		for (int cL = 0; cL < road->channel_carL[c].size(); ++cL) {
 			CarLocationOnRoad *carL = road->channel_carL[c][cL];//车道内的车辆id及位置
@@ -577,6 +578,11 @@ Time Solver::min_time_cost(const ID car, const ID from, const ID to) const {
     return time_cost;
 }
 
+void Solver::read_from_file()
+{
+
+}
+
 
 void Solver::init_solution_once() {
 	int car_size = ins_->raw_cars.size();
@@ -584,7 +590,7 @@ void Solver::init_solution_once() {
 	Time  temp_time;
 	Speed speed;
 	//vector<Car> notPlanCar;
-	for (auto i = 0; i < car_size; ++i) {
+	/*for (auto i = 0; i < car_size; ++i) {
 		Routine routine;
 		RawCar car = ins_->raw_cars[i];
 		routine.car_id = car.id;
@@ -605,7 +611,34 @@ void Solver::init_solution_once() {
 		}
 		total_time += temp_time;
 		output_->routines.push_back(routine);
+	}*/
+	for (auto i = 0; i < car_size; ++i) {
+		Routine routine;
+		RawCar car = ins_->raw_cars[i];
+		routine.car_id = car.id;
+		routine.start_time = car.plan_time;
+		routine.roads.push_back(26);
+		routine.roads.push_back(31);
+		routine.roads.push_back(36);
+		routine.roads.push_back(30);
+		routine.roads.push_back(24);
+
+		output_->routines.push_back(routine);
 	}
+	for (auto i = 10; i < car_size; ++i) {
+		Routine routine;
+		RawCar car = ins_->raw_cars[i];
+		routine.car_id = car.id;
+		routine.start_time = car.plan_time;
+		routine.roads.push_back(35);
+		routine.roads.push_back(30);
+		routine.roads.push_back(25);
+		routine.roads.push_back(31);
+		routine.roads.push_back(37);
+
+		output_->routines.push_back(routine);
+	}
+	total_time = 100;
 	std::cout << "the cost time is " << total_time << std::endl;
 }
 }

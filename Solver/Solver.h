@@ -17,6 +17,7 @@ public:
 		aux(ins_->raw_crosses.size()){
 		car_size = ins_->raw_cars.size();
 		road_size = ins_->raw_roads.size();
+		double_road_size = road_size * 2;
 		cross_size = ins_->raw_crosses.size();
 	};
     ~Solver() {
@@ -54,8 +55,10 @@ private:
 	Topo topo; 
 	Aux aux;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
+	void read_from_file();
 	int car_size ;
 	int road_size ;
+	int double_road_size;
 	int cross_size;
 	int inDst_num;
     // [TODO]添加算法用到的数据结构
