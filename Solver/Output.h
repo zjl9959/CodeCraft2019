@@ -12,6 +12,7 @@ namespace codecraft2019 {
 struct Routine {
     ID car_id;
     Time start_time;
+    Time temp_runtime;   //xxf：临时记录路径消耗时间
     std::vector<ID> roads;
 	std::vector<ID> crosses;//由roads转换而来的路口
 };

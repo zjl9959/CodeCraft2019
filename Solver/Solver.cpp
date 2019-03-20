@@ -49,11 +49,12 @@ void Solver::init_solution()
 	Time temp_time,latest_time=-1;
 	Speed speed=0;
 	//vector<Car> notPlanCar;
-
+    //cout << "The car_size is: " << car_size << endl;                      //xxf:debug
 	for (auto i = 0; i < car_size; ++i) {
 		Routine *routine = new Routine;
 		RawCar *raw_car = &ins_->raw_cars[i];
 		routine->car_id = raw_car->id;
+        routine->start_time = raw_car->plan_time; //xxf:先将routine的出发时间记录为车的原始出发时间
 		if (raw_car->plan_time > latest_time) latest_time = raw_car->plan_time;
 		temp = raw_car->from;
 		while (temp != raw_car->to)
@@ -70,18 +71,117 @@ void Solver::init_solution()
 			temp_time += road.length / speed;
 		}//计算没有拥堵时的耗时
 		InterRoutine *interR = new InterRoutine(topo.cars[i],temp_time);
+        routine->temp_runtime = temp_time;     //xxf:记录每辆车路径的临时消耗时间
 		output_->routines.push_back(routine);//使用最短路，此时routine的出发时间还未确定
 		aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
 	}
 
 	
 	/**接下来调整车辆的实际出发时间*/
-	vector<Routine *> *time_car;
+	vector<Routine *> *time_car;             //xxf:将出发时间相同的车的routine 放入一个vector
 	time_car = new vector<Routine *>[latest_time+1];
 	for (int i = 0; i < car_size; ++i) {
 		Time start_time = ins_->raw_cars[i].plan_time;
-		time_car[start_time].push_back(output_->routines[i]);
-	}
+		time_car[start_time].push_back(output_->routines[i]);    
+	}                                       
+    //xxf：调整车的实际出发时间，保证路径上的车辆总数不超过给定值MaxNumCarInRoad;
+    list<Routine *> startOrder;         //xxf:利用list保存按出发时间排序的routine
+    startOrder.clear();
+    for (int i = 0; i <= latest_time; ++i) {
+        if (time_car[i].size() > 0)
+            for (int j = 0; j < time_car[i].size(); j++) startOrder.push_back(time_car[i][j]);
+    }
+    //cout << "The size of startOrder list is :" << startOrder.size() << endl;
+    int numCarInRoad = 0, MaxnumCarInRoad = 70;
+    Time current_time = -1;
+    map<Time, int> same_timeRequired_Num;      //xxf：car所需要到达终点的时间 相同的 车的数量  
+    int flag = 0;
+    while (!startOrder.empty()) {
+        if (numCarInRoad < MaxnumCarInRoad) {
+            Routine* first = startOrder.front();
+            if (current_time == -1) {
+                current_time = first->start_time;
+            }
+            Time needtime = first->temp_runtime + first->start_time - current_time;
+            if (same_timeRequired_Num.find(needtime) == same_timeRequired_Num.end()) same_timeRequired_Num.insert(make_pair(needtime, 1));
+            else same_timeRequired_Num[needtime]++;
+            numCarInRoad++;
+            first = NULL;
+            delete first;
+            startOrder.pop_front();
+        }
+        else {
+            //debug
+            //cout << "when list startorder comes else ： done add 200 cars in road ！！！" << endl << endl;
+            //cout << "tne current map size is :" << same_timeRequired_Num.size() << endl;
+            //map<Time, int>::iterator iter;
+            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++)
+            //{
+            //    cout << "                " << iter->first << "     " << iter->second << endl; 
+            //}
+            //cout << endl << endl;
+            //cout << " the current time is:" << current_time << endl;
+            //debugend
+            map<Time, int>::iterator iter = same_timeRequired_Num.begin();
+            int spend_time = iter->first;
+            current_time += spend_time;                                  
+            int numToGoCars = iter->second;
+            same_timeRequired_Num.erase(iter);
+            //debug
+            //cout << " The first spend_time is :" << spend_time << endl;
+            //cout << "The current_time（add spend_time）is:" << current_time << endl;
+            //cout << "Tne current map size is (delete the first line):" << same_timeRequired_Num.size() << endl;
+            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
+            //    cout << "                " << iter->first << "     " << iter->second << endl;
+            //}
+            //cout << endl << endl;
+            //debugend
+            iter = same_timeRequired_Num.begin();  //xxf:更新same_timeRequired_Num中车辆到达终点所需的时间 减去 iter->first
+            for (; iter != same_timeRequired_Num.end(); ) {
+                Time old_time = iter->first;
+                same_timeRequired_Num.insert(make_pair(old_time - spend_time, iter->second));
+                iter++;
+                same_timeRequired_Num.erase(old_time);
+                //map<Time, int>::iterator iter_;
+                //int j = 0;
+                //for (iter_ = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++,j<7) {
+                //    cout << "                " << iter_->first << "     " << iter_->second << endl;
+                //    j++;
+                //}
+                //cout << "done done done " << endl << endl;
+            }
+            //cout << "Tne current map size is (update):" << same_timeRequired_Num.size() << endl;
+            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
+            //    cout << "                " << iter->first << "     " << iter->second << endl;
+            //}
+            //cout << endl << endl;
+            for (int i = 0; i < numToGoCars; i++) {
+                if (startOrder.empty()) {
+                    flag = 1;
+                    break;
+                }
+                Routine* first = startOrder.front();
+                if (first->start_time < current_time) first->start_time = current_time;
+                Time needtime = first->temp_runtime + first->start_time - current_time;
+                if (same_timeRequired_Num.find(needtime) == same_timeRequired_Num.end()) same_timeRequired_Num.insert(make_pair(needtime, 1));
+                else same_timeRequired_Num[needtime]++;
+                first = NULL;
+                delete first;
+                startOrder.pop_front();
+            }
+            if (flag)break;
+        }
+
+    } 
+    //cout << endl << endl;
+    //map<Time, int>::iterator iter;
+    //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
+    //    cout << "                " << iter->first << "     " << iter->second << endl;
+    //}
+    //cout << endl << endl;
+    cout << "done" << endl;
+    startOrder.clear();
+
 	/*for (int i = 0; i <= latest_time; ++i) {
 		if (time_car[i].size()>0){
 			std::cout << "the plan time is" << i << " the carnum is"<<time_car[i].size()<<std::endl;
