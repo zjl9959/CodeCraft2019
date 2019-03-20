@@ -415,7 +415,7 @@ public:
         static char buf[DateBufSize];
         time_t t = time(NULL);
         tm *date;
-        localtime_s(date, &t);
+        //localtime_s(date, &t);
         strftime(buf, DateBufSize, format, date);
         return buf;
     }

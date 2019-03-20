@@ -8,6 +8,7 @@
 namespace codecraft2019 {
 
 /*******定义基本的数据类型********/
+#define INT_MAX       2147483647  
 #define INVALID_ID -1           // 无效的ID
 #define LENGTH_MAX INT_MAX
 #define MAX_TIME INT_MAX

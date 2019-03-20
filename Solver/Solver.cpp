@@ -18,8 +18,11 @@ bool car_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2)
 	return carL1->car_id < carL2->car_id;
 }
 void Solver::run() {
-    init();
-    binary_generate_solution();
+    /*init();
+    binary_generate_solution();*/
+
+	init_solution_once();
+	check_solution();
     // ÃÌº”À„∑®°£°£°£
 }
 
@@ -209,7 +212,7 @@ int Solver::check_solution()
 	STATE *car_state;
 
 	car_state = new STATE[car_size];
-	time_car = new vector<ID>[total_time+3];
+	time_car = new vector<ID>[100000];
 	for (int i = 0; i < car_size; ++i) {
 		Time start_time = output_->routines[i].start_time;
 		time_car[start_time].push_back(i);
@@ -641,7 +644,7 @@ void Solver::init_solution_once() {
 		total_time += temp_time;
 		output_->routines.push_back(routine);
 	}*/
-	for (auto i = 0; i < car_size; ++i) {
+	for (auto i = 0; i < 10; ++i) {
 		Routine routine;
 		RawCar car = ins_->raw_cars[i];
 		routine.car_id = car.id;
