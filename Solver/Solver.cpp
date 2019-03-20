@@ -119,9 +119,18 @@ void Solver::init_solution()
 	std::cout << "the latest time is" << latest_time << std::endl;
 }
 
-// 采用二分搜索的方法产生初始解
+/* 
+ * 同时出发一定数目车辆，待车辆完全到达终点后再出发下一批车辆,直到所有车辆都规划路线。
+ * 每辆车的路线默认是走最短路径，默认车不会产生拥堵（或拥堵时间为理想时间的一半）。
+ * 每构造一个解【可能不合法】，都调用一次checker，如果解合法，加大计划出发车数目，否则减少数目。
+ */
 void Solver::binary_generate_solution() {
-
+    int car_num_left = 1;               // 二分搜索左边指针
+    int car_num_right = topo.car_size;  // 二分搜索右边指针
+    while (car_num_left < car_num_right) {
+        int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+        // TODO....
+    }
 }
 
 bool Solver::check_solution()
