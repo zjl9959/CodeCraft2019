@@ -51,6 +51,7 @@ private:
 	int car_size ;
 	int road_size ;
 	int cross_size;
+	int inDst_num;
     // [TODO]添加算法用到的数据结构
 };
 

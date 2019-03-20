@@ -25,7 +25,7 @@ using List = std::vector<T>;
 
 enum Turn { Front, Left, Right,  InvalidTurn };
 enum IDMap{RoadMap = 5000,CrossMap = 1,CarMap = 10000};
-enum STATE{STATE_waitRun,STATE_terminated};
+enum STATE{STATE_waitRun,STATE_terminated, STATE_in_dst};
 
 
 /***********定义输入输出路径环境***************/
