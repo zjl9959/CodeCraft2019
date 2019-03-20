@@ -27,6 +27,21 @@ struct Routine {
         roads.swap(rhs.roads);
         crosses.swap(rhs.crosses);
     }
+
+    Routine& operator = (const Routine &rhs) {
+        car_id = rhs.car_id;
+        start_time = rhs.start_time;
+        roads = rhs.roads;
+        crosses = rhs.crosses;
+        return *this;
+    }
+    Routine& operator = (Routine &&rhs) {
+        car_id = rhs.car_id;
+        start_time = rhs.start_time;
+        roads.swap(rhs.roads);
+        crosses.swap(rhs.crosses);
+        return *this;
+    }
 };
 
 struct Output {

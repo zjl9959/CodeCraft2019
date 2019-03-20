@@ -30,8 +30,9 @@ int main(int argc, char *argv[])
     Configure cfg;
 	
     Solver solver(&ins, &output, &env, &cfg);
-	solver.init_solution_once();
-	solver.check_solution();
+    solver.run();
+	//solver.init_solution_once();
+	//solver.check_solution();
     output.save(env);
 	
 	return 0;
