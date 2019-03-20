@@ -49,7 +49,7 @@ void Solver::init_solution()
 	Time temp_time,latest_time=-1;
 	Speed speed=0;
 	//vector<Car> notPlanCar;
-    //cout << "The car_size is: " << car_size << endl;                      //xxf:debug
+
 	for (auto i = 0; i < car_size; ++i) {
 		Routine *routine = new Routine;
 		RawCar *raw_car = &ins_->raw_cars[i];
@@ -91,7 +91,6 @@ void Solver::init_solution()
         if (time_car[i].size() > 0)
             for (int j = 0; j < time_car[i].size(); j++) startOrder.push_back(time_car[i][j]);
     }
-    //cout << "The size of startOrder list is :" << startOrder.size() << endl;
     int numCarInRoad = 0, MaxnumCarInRoad = 70;
     Time current_time = -1;
     map<Time, int> same_timeRequired_Num;      //xxf：car所需要到达终点的时间 相同的 车的数量  
@@ -111,50 +110,18 @@ void Solver::init_solution()
             startOrder.pop_front();
         }
         else {
-            //debug
-            //cout << "when list startorder comes else ： done add 200 cars in road ！！！" << endl << endl;
-            //cout << "tne current map size is :" << same_timeRequired_Num.size() << endl;
-            //map<Time, int>::iterator iter;
-            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++)
-            //{
-            //    cout << "                " << iter->first << "     " << iter->second << endl; 
-            //}
-            //cout << endl << endl;
-            //cout << " the current time is:" << current_time << endl;
-            //debugend
             map<Time, int>::iterator iter = same_timeRequired_Num.begin();
             int spend_time = iter->first;
             current_time += spend_time;                                  
             int numToGoCars = iter->second;
             same_timeRequired_Num.erase(iter);
-            //debug
-            //cout << " The first spend_time is :" << spend_time << endl;
-            //cout << "The current_time（add spend_time）is:" << current_time << endl;
-            //cout << "Tne current map size is (delete the first line):" << same_timeRequired_Num.size() << endl;
-            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
-            //    cout << "                " << iter->first << "     " << iter->second << endl;
-            //}
-            //cout << endl << endl;
-            //debugend
             iter = same_timeRequired_Num.begin();  //xxf:更新same_timeRequired_Num中车辆到达终点所需的时间 减去 iter->first
             for (; iter != same_timeRequired_Num.end(); ) {
                 Time old_time = iter->first;
                 same_timeRequired_Num.insert(make_pair(old_time - spend_time, iter->second));
                 iter++;
                 same_timeRequired_Num.erase(old_time);
-                //map<Time, int>::iterator iter_;
-                //int j = 0;
-                //for (iter_ = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++,j<7) {
-                //    cout << "                " << iter_->first << "     " << iter_->second << endl;
-                //    j++;
-                //}
-                //cout << "done done done " << endl << endl;
             }
-            //cout << "Tne current map size is (update):" << same_timeRequired_Num.size() << endl;
-            //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
-            //    cout << "                " << iter->first << "     " << iter->second << endl;
-            //}
-            //cout << endl << endl;
             for (int i = 0; i < numToGoCars; i++) {
                 if (startOrder.empty()) {
                     flag = 1;
@@ -173,13 +140,6 @@ void Solver::init_solution()
         }
 
     } 
-    //cout << endl << endl;
-    //map<Time, int>::iterator iter;
-    //for (iter = same_timeRequired_Num.begin(); iter != same_timeRequired_Num.end(); iter++) {
-    //    cout << "                " << iter->first << "     " << iter->second << endl;
-    //}
-    //cout << endl << endl;
-    cout << "done" << endl;
     startOrder.clear();
 
 	/*for (int i = 0; i <= latest_time; ++i) {
