@@ -15,7 +15,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\my_config\answer.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
