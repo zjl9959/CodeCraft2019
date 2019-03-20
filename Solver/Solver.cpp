@@ -26,10 +26,10 @@ void Solver::run() {
 void Solver::testIO() {
 	output_->routines.resize(ins_->raw_cars.size());
 	for (int i = 0; i < ins_->raw_cars.size(); ++i) {
-		output_->routines[i]->car_id = ins_->raw_cars[i].id;
-		output_->routines[i]->start_time = ins_->raw_cars[i].plan_time;
-		output_->routines[i]->roads.push_back(ins_->raw_cars[i].from);
-		output_->routines[i]->roads.push_back(ins_->raw_cars[i].to);
+		output_->routines[i].car_id = ins_->raw_cars[i].id;
+		output_->routines[i].start_time = ins_->raw_cars[i].plan_time;
+		output_->routines[i].roads.push_back(ins_->raw_cars[i].from);
+		output_->routines[i].roads.push_back(ins_->raw_cars[i].to);
 	}
 }
 
@@ -64,21 +64,21 @@ void Solver::init_solution()
 	//vector<Car> notPlanCar;
 
 	for (auto i = 0; i < car_size; ++i) {
-		Routine *routine = new Routine;
+		Routine routine;
 		RawCar *raw_car = &ins_->raw_cars[i];
-		routine->car_id = raw_car->id;
+		routine.car_id = raw_car->id;
 		if (raw_car->plan_time > latest_time) latest_time = raw_car->plan_time;
 		temp = raw_car->from;
 		while (temp != raw_car->to)
 		{
 			next = topo.pathID[temp][raw_car->to];
-			routine->roads.push_back(topo.adjRoadID[temp][next]);
+			routine.roads.push_back(topo.adjRoadID[temp][next]);
 			temp = next;
 		}
 
 		temp_time = 0;
-		for (auto j = 0; j < routine->roads.size(); ++j) {
-			RawRoad road = ins_->raw_roads[routine->roads[j]];
+		for (auto j = 0; j < routine.roads.size(); ++j) {
+			RawRoad road = ins_->raw_roads[routine.roads[j]];
 			speed = min(road.speed, raw_car->speed);
 			temp_time += road.length / speed;
 		}//计算没有拥堵时的耗时
@@ -93,7 +93,7 @@ void Solver::init_solution()
 	time_car = new vector<Routine *>[latest_time+1];
 	for (int i = 0; i < car_size; ++i) {
 		Time start_time = ins_->raw_cars[i].plan_time;
-		time_car[start_time].push_back(output_->routines[i]);
+		time_car[start_time].push_back(&output_->routines[i]);
 	}
 	/*for (int i = 0; i <= latest_time; ++i) {
 		if (time_car[i].size()>0){
@@ -186,14 +186,14 @@ bool Solver::check_solution()
 	car_state = new STATE[car_size];
 	time_car = new vector<ID>[total_time+3];
 	for (int i = 0; i < car_size; ++i) {
-		Time start_time = output_->routines[i]->start_time;
+		Time start_time = output_->routines[i].start_time;
 		time_car[start_time].push_back(i);
 	}
 	inDst_num = 0;
 	for (int j = 0; j < car_size; ++j) {
 		Log(FY_TEST) << "car_id:" << ins_->changeToOriginalID(j, CarMap)<<"  ";
-		for (int i = 0; i < output_->routines[j]->roads.size(); ++i) {
-			Log(FY_TEST) << ins_->changeToOriginalID(output_->routines[j]->roads[i], RoadMap)<< "  ";
+		for (int i = 0; i < output_->routines[j].roads.size(); ++i) {
+			Log(FY_TEST) << ins_->changeToOriginalID(output_->routines[j].roads[i], RoadMap)<< "  ";
 		}
 		Log(FY_TEST) << endl;
 	}
@@ -314,8 +314,8 @@ bool Solver::check_solution()
 			break;
 		}
 		for (int j = 0; j < time_car[i].size(); j++) {//将所有该时刻要出发的车辆记录下来
-			ID first_road = output_->routines[time_car[i][j]]->roads[0];
-			ID car_id = output_->routines[time_car[i][j]]->car_id;
+			ID first_road = output_->routines[time_car[i][j]].roads[0];
+			ID car_id = output_->routines[time_car[i][j]].car_id;
 			CarLocationOnRoad *new_carL = new CarLocationOnRoad;
 			new_carL->car_id = car_id;
 			new_carL->index = 0;
@@ -467,8 +467,8 @@ void Solver::driveCarInGarage()
 void Solver::recordProbOutCross(CarLocationOnRoad * carL, Cross * cross, Road * road)
 {
 	Turn turn =Front;
-	if (carL->index + 1 < output_->routines[carL->car_id]->roads.size()) {
-		ID next_road_id = output_->routines[carL->car_id]->roads[carL->index + 1];//这里之后可能会做修改
+	if (carL->index + 1 < output_->routines[carL->car_id].roads.size()) {
+		ID next_road_id = output_->routines[carL->car_id].roads[carL->index + 1];//这里之后可能会做修改
 		Road *next_road = getNextRoad(carL, cross);
 		if (next_road == NULL) {
 			cout << "next_road is NULL \n";
@@ -484,8 +484,8 @@ void Solver::recordProbOutCross(CarLocationOnRoad * carL, Cross * cross, Road * 
 Road* Solver::getNextRoad(CarLocationOnRoad * carL, Cross * cross)
 {
 	Road *next_road = NULL;
-	if (carL->index + 1 < output_->routines[carL->car_id]->roads.size()) {
-		ID next_road_id = output_->routines[carL->car_id]->roads[carL->index + 1];//这里之后可能会做修改
+	if (carL->index + 1 < output_->routines[carL->car_id].roads.size()) {
+		ID next_road_id = output_->routines[carL->car_id].roads[carL->index + 1];//这里之后可能会做修改
 		if (cross->raw_cross->id == ins_->raw_roads[next_road_id].from) {
 			next_road = topo.roads[next_road_id];
 		}
@@ -584,21 +584,21 @@ void Solver::init_solution_once() {
 	Speed speed;
 	//vector<Car> notPlanCar;
 	for (auto i = 0; i < car_size; ++i) {
-		Routine *routine = new Routine;
+		Routine routine;
 		RawCar car = ins_->raw_cars[i];
-		routine->car_id = car.id;
-		routine->start_time = car.plan_time;
+		routine.car_id = car.id;
+		routine.start_time = car.plan_time;
 		temp = car.from;
 		while (temp != car.to)
 		{
 			next = topo.pathID[temp][car.to];
-			routine->roads.push_back(topo.adjRoadID[temp][next]);
+			routine.roads.push_back(topo.adjRoadID[temp][next]);
 			temp = next;
 		}
 
 		temp_time = 0;
-		for (auto j = 0; j < routine->roads.size(); ++j) {
-			RawRoad road = ins_->raw_roads[routine->roads[j]];
+		for (auto j = 0; j < routine.roads.size(); ++j) {
+			RawRoad road = ins_->raw_roads[routine.roads[j]];
 			speed = min(road.speed, car.speed);
 			temp_time += road.length / speed;
 		}
