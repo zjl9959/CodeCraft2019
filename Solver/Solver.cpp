@@ -18,11 +18,11 @@ bool car_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2)
 	return carL1->car_id < carL2->car_id;
 }
 void Solver::run() {
-    /*init();
-    binary_generate_solution();*/
+    init();
+    binary_generate_solution();
 
-	init_solution_once();
-	check_solution();
+	/*init_solution_once();
+	check_solution();*/
     // ÃÌº”À„∑®°£°£°£
 }
 

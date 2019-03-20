@@ -173,7 +173,7 @@ void Topo::init_myTopo()
 			if (road_id != INVALID_ID) {
 				if(roads[road_id]->to_id == raw_cross->id)
 					crosses[i]->road.push_back(roads[raw_cross->road[j]]);
-				else if(roads[road_id + rsize]->to_id == raw_cross->id)
+				else if(roads[road_id+rsize] && roads[road_id + rsize]->to_id == raw_cross->id)
 					crosses[i]->road.push_back(roads[road_id +rsize ]);
 			}
 		}
