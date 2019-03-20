@@ -177,7 +177,7 @@ void Solver::binary_generate_solution() {
     // [TODO] 最后将初始解转换成需要的形式。
 }
 
-bool Solver::check_solution()
+int Solver::check_solution()
 {
 	
 	vector<ID> *time_car;
@@ -305,13 +305,13 @@ bool Solver::check_solution()
 			}
 		}
 		if (!isValid) {
-			return false;
+			return -1;
 		}
 
 		driveCarInGarage();
 		if (inDst_num == car_size) {
 			cout << " the cost time of scheduler is " << i << endl;
-			break;
+			return i;
 		}
 		for (int j = 0; j < time_car[i].size(); j++) {//将所有该时刻要出发的车辆记录下来
 			ID first_road = output_->routines[time_car[i][j]].roads[0];
@@ -498,6 +498,8 @@ Road* Solver::getNextRoad(CarLocationOnRoad * carL, Cross * cross)
 
 bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * carL)
 {
+	if (carL->state == STATE_terminated)
+		return false;
 	Length S1 = road->raw_road->length - carL->location;//当前道路的可行驶距离
 	if (next_road == NULL) {
 		Speed speed = min(road->raw_road->speed, ins_->raw_cars[carL->car_id].speed);
@@ -511,8 +513,7 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 	else {
 		Speed V2 = min(next_road->raw_road->speed, ins_->raw_cars[carL->car_id].speed);//下一条道路可行驶的最大速度
 		if (S1 >= V2) {//该车不能通过路口
-			if (carL->state == STATE_terminated)
-				return false;
+			
 			carL->location = road->raw_road->length;
 			carL->state = STATE_terminated;
 			return false;

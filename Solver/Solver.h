@@ -31,7 +31,7 @@ public:
 	void init_solution();
 	void init_solution_once();
     void binary_generate_solution();
-	bool check_solution();
+	int check_solution();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
