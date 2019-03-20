@@ -250,3 +250,5 @@ ModelManifest.xml
 /Deploy/Solution/*.txt
 /Deploy/Log
 /Deploy/log*.csv
+*.vcxproj
+/Checker/*.vcxproj
