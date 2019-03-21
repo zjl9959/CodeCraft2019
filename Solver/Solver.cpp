@@ -22,7 +22,9 @@ void Solver::run() {
     binary_generate_solution();
 
 	/*init_solution_once();
-	check_solution();*/
+	if (check_solution() == -1) {
+		Log(FY_TEST) << " dead lock\n";
+	}*/
     // 添加算法。。。
 }
 
@@ -218,16 +220,16 @@ int Solver::check_solution()
 		time_car[start_time].push_back(i);
 	}
 	inDst_num = 0;
-	for (int j = 0; j < car_size; ++j) {
+	/*for (int j = 0; j < car_size; ++j) {
 		Log(FY_TEST) << "car_id:" << ins_->changeToOriginalID(j, CarMap)<<"  ";
 		for (int i = 0; i < output_->routines[j].roads.size(); ++i) {
 			Log(FY_TEST) << ins_->changeToOriginalID(output_->routines[j].roads[i], RoadMap)<< "  ";
 		}
 		Log(FY_TEST) << endl;
-	}
+	}*/
 	
 	for (int i = 0; i <= MAX_TIME; i++) {
-		if (i == 12) {
+		if (i == 45) {
 			int j;
 			j = i* 1;
 		}
@@ -259,6 +261,9 @@ int Solver::check_solution()
 								Speed speed = min(road->raw_road->speed, ins_->raw_cars[next_carL->car_id].speed);
 								if (speed + next_carL->location > road->raw_road->length) {
 									recordProbOutCross(next_carL, cross, road);
+								}
+								else {//车道前的车速度无法出路口，那么后面的车更加不会
+									break;
 								}
 							}
 
@@ -303,13 +308,17 @@ int Solver::check_solution()
 								if (conflict)//有冲突此次调度结束
 									break;
 							}
+							int temp_ch = carL->channel_id; // 原道路所在的车道
 							if (moveToNextRoad(road, next_road, carL) ||
 								carL->state == STATE_terminated) {//说明在该时刻已经不可能出路口
 								road->waitOutCarL.erase(road->waitOutCarL.begin());
-								driveCarOnChannelToEndState(road, carL->channel_id);
+								driveCarOnChannelToEndState(road, temp_ch);
 								isCarRun = true;
 								canSchedule = true;
 								r = -1;
+							}
+							else {//第一优先级不能出路口，那么后面的车都不能出
+								break;
 							}
 						}
 					}
@@ -356,20 +365,48 @@ int Solver::check_solution()
 			}
 		}
 
-#ifdef FY_TEST
-		cout << "------------------- Time  " << i << "-------------------" << endl;
+#if FY_TEST == 0
+		Log(FY_TEST) << "\n\n------------------- Time  " << i << "-------------------\n" << endl;
 		for (int i = 0; i < road_size * 2; ++i) {
 			Road *road = topo.roads[i];
-			for (int c = 0; c < road->channel_carL.size(); ++c) {
-				for (int cL = 0; cL < road->channel_carL[c].size(); ++cL) {
-					CarLocationOnRoad *carL = road->channel_carL[c][cL];
-					Log(FY_TEST) << "car_id: " << ins_->changeToOriginalID(carL->car_id, CarMap) << "  location: " << carL->location
-						<< "  road_id :" << ins_->changeToOriginalID(road->raw_road->id, RoadMap) <<" ch: "<<
-						carL->channel_id<<" from: "
-						<< ins_->changeToOriginalID(road->from_id, CrossMap) << " to: "
-						<< ins_->changeToOriginalID(road->to_id, CrossMap) << endl;
+			if (road != NULL) {
+				for (int c = 0; c < road->channel_carL.size(); ++c) {
+					if (road->channel_carL[c].size() > 0) {
+						for (int cL = road->channel_carL[c].size() - 1; cL >= 0; --cL) {
+							CarLocationOnRoad *carL = road->channel_carL[c][cL];
+							if (output_->routines[carL->car_id].roads[carL->index] != road->raw_road->id) {
+								cout << "road  error" << endl;
+
+							}
+							if (carL->channel_id!= c) {
+								cout << "error" <<endl;
+							}
+						}
+						/*Log(FY_TEST) << road->raw_road->id << ": " << ins_->changeToOriginalID(road->from_id, CrossMap) << "\t"
+							<< ins_->changeToOriginalID(road->to_id, CrossMap) << endl;
+
+						for (int len = 1; len <= road->raw_road->length; len++) {
+							Log(FY_TEST) << "---" << len << "--- ";
+						}
+
+						Log(FY_TEST) << endl;
+
+
+						int loc = 0;
+						for (int cL = road->channel_carL[c].size() - 1; cL >= 0; --cL) {
+							CarLocationOnRoad *carL = road->channel_carL[c][cL];
+							for (int t = loc; t < carL->location - 1; t++) {
+								cout << "       |";
+							}
+							Log(FY_TEST) << ins_->changeToOriginalID(carL->car_id, CarMap) << "  |";
+							loc = carL->location;
+						}
+						Log(FY_TEST) << endl;*/
+					}
+
 				}
 			}
+			
 		}
 #endif // FY_TEST
 	}
@@ -414,6 +451,9 @@ void Solver::driveAllCarJustOnRoadToEndState(Road *road)
 	for (int c = 0; c < road->channel_carL.size(); ++c) {//获取车道
 		for (int cL = 0; cL < road->channel_carL[c].size(); ++cL) {
 			CarLocationOnRoad *carL = road->channel_carL[c][cL];//车道内的车辆id及位置
+			if (carL->car_id == 1401) {
+				cout << "test" << endl;
+			}
 			Speed speed = min(ins_->raw_cars[carL->car_id].speed, road->raw_road->speed);
 			if (cL == 0) {//说明是车道内的第一辆车
 				if (carL->location + speed > road->raw_road->length) {//会出路口
@@ -498,6 +538,9 @@ void Solver::recordProbOutCross(CarLocationOnRoad * carL, Cross * cross, Road * 
 	Turn turn =Front;
 	if (carL->index + 1 < output_->routines[carL->car_id].roads.size()) {
 		ID next_road_id = output_->routines[carL->car_id].roads[carL->index + 1];//这里之后可能会做修改
+		if(next_road_id == 51 && carL->car_id == 8659) {
+			cout << "51 test \n";
+		}
 		Road *next_road = getNextRoad(carL, cross);
 		if (next_road == NULL) {
 			cout << "next_road is NULL \n";
@@ -515,11 +558,12 @@ Road* Solver::getNextRoad(CarLocationOnRoad * carL, Cross * cross)
 	Road *next_road = NULL;
 	if (carL->index + 1 < output_->routines[carL->car_id].roads.size()) {
 		ID next_road_id = output_->routines[carL->car_id].roads[carL->index + 1];//这里之后可能会做修改
-		if (cross->raw_cross->id == ins_->raw_roads[next_road_id].from) {
-			next_road = topo.roads[next_road_id];
+		Road *road1 = topo.roads[next_road_id],*road2 = topo.roads[next_road_id + road_size];
+		if (road1 && cross->raw_cross->id == road1->from_id) {
+			next_road = road1;
 		}
-		else if (cross->raw_cross->id == ins_->raw_roads[next_road_id].to) {
-			next_road = topo.roads[next_road_id + road_size];
+		if (road2 && cross->raw_cross->id == road2->from_id) {
+			next_road = road2;
 		}
 	}
 	return next_road;
@@ -574,6 +618,16 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 					carL->state = STATE_terminated;
 					return false;
 				}
+				else if (last_carL->location > (V2 - S1)) {
+					road->channel_carL[carL->channel_id].erase(road->channel_carL[carL->channel_id].begin());
+					carL->location = V2 - S1;
+					carL->channel_id = c;
+					carL->state = STATE_terminated;
+					carL->index += 1;
+					next_road->channel_carL[carL->channel_id].push_back(carL);
+					return true;
+				}
+				//TODO:添加last_carL不阻挡
 			}
 			
 		}
