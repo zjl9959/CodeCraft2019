@@ -146,17 +146,17 @@ void Solver::binary_generate_solution() {
     vector<Time> best_start_times;              // 最优的车辆出发时间
     best_start_times.reserve(total_car_num);
     Time best_schdeule_time = MAX_TIME;
-    vector<pair<Time, ID>> cars_run_time;       // 计算每辆车在路上最少花费的时间（车走最短路线）。
-    cars_run_time.reserve(total_car_num);
+    vector<pair<Time, ID>> run_time;       // 计算每辆车在路上最少花费的时间（车走最短路线）。
+    run_time.reserve(total_car_num);
     for (auto car = ins_->raw_cars.begin(); car != ins_->raw_cars.end(); ++car) {
-        cars_run_time.push_back(make_pair(
+        run_time.push_back(make_pair(
             min_time_cost(car->id, car->from, car->to), car->id));
     }
     auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
     auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
-    sort(cars_run_time.begin(), cars_run_time.end(), cmp_less);  // 在路上耗时少的车辆先出发。
+    sort(run_time.begin(), run_time.end(), cmp_less);  // 在路上耗时少的车辆先出发。
     int binsearch_turn = 1;
-    while (car_num_left < car_num_right) {      // 二分调参大法
+    while (car_num_left <= car_num_right) {      // 二分调参大法
         Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
         int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
         vector<Time> start_times;
@@ -164,6 +164,7 @@ void Solver::binary_generate_solution() {
         priority_queue<pair<Time, ID>, vector<pair<Time,ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
         int start_car_num = 0;
         Time current_time = 0;
+        vector<pair<Time, ID>> cars_run_time(run_time);
         while (start_car_num < total_car_num) { // 按照不同的参数配置为每辆车设置出发时间。
             for (int i = 0; i < cars_run_time.size() && pqueue.size() < car_num_mid; ++i) {
                 ID car_id = cars_run_time[i].second;
