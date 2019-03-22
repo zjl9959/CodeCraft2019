@@ -47,6 +47,7 @@ private:
     Time min_time_cost(const ID car, const ID from, const ID to) const;
 protected:
     Instance* ins_;
+	int t;
 	Time total_time;
     Output* output_;
     Environment* env_;
@@ -61,6 +62,7 @@ private:
 	int double_road_size;
 	int cross_size;
 	int inDst_num;
+	int cars_totalTime;
     // [TODO]添加算法用到的数据结构
 };
 

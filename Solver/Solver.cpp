@@ -5,7 +5,7 @@ using namespace std;
 namespace codecraft2019 {
 bool carL_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2) {//location大，车道号小的优先级高
 	bool res;
-	if (carL1->location > carL2->location) {//carL1->location >= carL2->location
+	if (carL1->location > carL2->location) {//carL1->location > carL2->location
 		return true;
 	}
 	else if (carL1->location == carL2->location){
@@ -14,8 +14,12 @@ bool carL_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2) {
 	return false;
 }
 
-bool car_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2) {
-	return carL1->car_id < carL2->car_id;
+bool car_time_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *carL2) {//出发时间早，且id小的优先级高
+	if (carL1->start_time < carL2->start_time)
+		return true;
+	else if(carL1->start_time == carL2->start_time)
+		return carL1->car_id < carL2->car_id;
+	return false;
 }
 void Solver::run() {
     init();
@@ -131,83 +135,173 @@ void Solver::init_solution()
 
 
 // 构造初始解版本二
+//void Solver::binary_generate_solution() {
+//    Log(Log::ZJL) << "start binary search" << endl;
+//    int car_num_left = 1;
+//    int car_num_right = topo.car_size;
+//    const int total_car_num = ins_->raw_cars.size();
+//    output_->routines.clear();
+//    for (int i = 0; i < total_car_num; ++i) {   // 每辆车都走最短路径
+//        Routine routine;
+//        routine.car_id = ins_->raw_cars[i].id;
+//        routine.roads = shortest_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
+//        output_->routines.push_back(move(routine));
+//    }
+//    vector<Time> best_start_times;              // 最优的车辆出发时间
+//    best_start_times.reserve(total_car_num);
+//    Time best_schdeule_time = MAX_TIME;
+//    vector<pair<Time, ID>> run_time;       // 计算每辆车在路上最少花费的时间（车走最短路线）。
+//    run_time.reserve(total_car_num);
+//    for (auto car = ins_->raw_cars.begin(); car != ins_->raw_cars.end(); ++car) {
+//        run_time.push_back(make_pair(
+//            min_time_cost(car->id, car->from, car->to), car->id));
+//    }
+//    auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
+//    auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
+//    sort(run_time.begin(), run_time.end(), cmp_less);  // 在路上耗时少的车辆先出发。
+//    int binsearch_turn = 1;
+//    while (car_num_left <= car_num_right) {      // 二分调参大法
+//        Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
+//        int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+//        vector<Time> start_times;
+//        start_times.resize(total_car_num);
+//        priority_queue<pair<Time, ID>, vector<pair<Time,ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
+//        int start_car_num = 0;
+//        Time current_time = 0;
+//        vector<pair<Time, ID>> cars_run_time(run_time);
+//        while (start_car_num < total_car_num) { // 按照不同的参数配置为每辆车设置出发时间。
+//            for (int i = 0; i < cars_run_time.size() && pqueue.size() < car_num_mid; ++i) {
+//                ID car_id = cars_run_time[i].second;
+//                if (cars_run_time[i].first == MAX_TIME)
+//                    break;
+//                if (ins_->raw_cars[car_id].plan_time <= current_time) {
+//                    pqueue.push(make_pair(cars_run_time.back().first + current_time, car_id));
+//                    start_times[car_id] = current_time;
+//                    ++start_car_num;
+//                    cars_run_time[i].first = MAX_TIME;
+//                   // Log(Log::ZJL) << "car " << car_id << " start at time " << current_time << endl;
+//                }
+//            }
+//            sort(cars_run_time.begin(), cars_run_time.end(), cmp_less);
+//            while (!pqueue.empty()) {           // 弹出到达目的地的车辆
+//                if (pqueue.top().first <= current_time) {
+//                    pqueue.pop();
+//                } else {
+//                    break;
+//                }
+//            }
+//            current_time++;
+//        }
+//        for (int i = 0; i < start_times.size(); ++i) {
+//            output_->routines[i].start_time = start_times[i];
+//        }
+//        Time cur_schedule_time = check_solution();
+//        Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
+//        if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
+//            car_num_left = car_num_mid + 1;
+//            if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
+//                best_schdeule_time = cur_schedule_time;
+//                best_start_times = start_times;
+//            }
+//        } else {
+//            car_num_right = car_num_mid - 1;
+//        }
+//    }
+//    for (int i = 0; i < best_start_times.size(); ++i) {
+//        output_->routines[i].start_time = best_start_times[i];
+//    }
+//}
 void Solver::binary_generate_solution() {
-    Log(Log::ZJL) << "start binary search" << endl;
-    int car_num_left = 1;
-    int car_num_right = topo.car_size;
-    const int total_car_num = ins_->raw_cars.size();
-    output_->routines.clear();
-    for (int i = 0; i < total_car_num; ++i) {   // 每辆车都走最短路径
-        Routine routine;
-        routine.car_id = ins_->raw_cars[i].id;
-        routine.roads = shortest_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
-        output_->routines.push_back(move(routine));
-    }
-    vector<Time> best_start_times;              // 最优的车辆出发时间
-    best_start_times.reserve(total_car_num);
-    Time best_schdeule_time = MAX_TIME;
-    vector<pair<Time, ID>> run_time;       // 计算每辆车在路上最少花费的时间（车走最短路线）。
-    run_time.reserve(total_car_num);
-    for (auto car = ins_->raw_cars.begin(); car != ins_->raw_cars.end(); ++car) {
-        run_time.push_back(make_pair(
-            min_time_cost(car->id, car->from, car->to), car->id));
-    }
-    auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
-    auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
-    sort(run_time.begin(), run_time.end(), cmp_less);  // 在路上耗时少的车辆先出发。
-    int binsearch_turn = 1;
-    while (car_num_left <= car_num_right) {      // 二分调参大法
-        Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
-        int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
-        vector<Time> start_times;
-        start_times.resize(total_car_num);
-        priority_queue<pair<Time, ID>, vector<pair<Time,ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
-        int start_car_num = 0;
-        Time current_time = 0;
-        vector<pair<Time, ID>> cars_run_time(run_time);
-        while (start_car_num < total_car_num) { // 按照不同的参数配置为每辆车设置出发时间。
-            for (int i = 0; i < cars_run_time.size() && pqueue.size() < car_num_mid; ++i) {
-                ID car_id = cars_run_time[i].second;
-                if (cars_run_time[i].first == MAX_TIME)
-                    break;
-                if (ins_->raw_cars[car_id].plan_time <= current_time) {
-                    pqueue.push(make_pair(cars_run_time.back().first + current_time, car_id));
-                    start_times[car_id] = current_time;
-                    ++start_car_num;
-                    cars_run_time[i].first = MAX_TIME;
-                    Log(Log::ZJL) << "car " << car_id << " start at time " << current_time << endl;
-                }
-            }
-            sort(cars_run_time.begin(), cars_run_time.end(), cmp_less);
-            while (!pqueue.empty()) {           // 弹出到达目的地的车辆
-                if (pqueue.top().first <= current_time) {
-                    pqueue.pop();
-                } else {
-                    break;
-                }
-            }
-            current_time++;
-        }
-        for (int i = 0; i < start_times.size(); ++i) {
-            output_->routines[i].start_time = start_times[i];
-        }
-        Time cur_schedule_time = check_solution();
-        Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
-        if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
-            car_num_left = car_num_mid + 1;
-            if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
-                best_schdeule_time = cur_schedule_time;
-                best_start_times = start_times;
-            }
-        } else {
-            car_num_right = car_num_mid - 1;
-        }
-    }
-    for (int i = 0; i < best_start_times.size(); ++i) {
-        output_->routines[i].start_time = best_start_times[i];
-    }
+	Log(Log::ZJL) << "start binary search" << endl;
+	int car_num_left = 1;
+	int car_num_right = topo.car_size;
+	const int total_car_num = ins_->raw_cars.size();
+	output_->routines.clear();
+	for (int i = 0; i < total_car_num; ++i) {   
+		Routine routine;
+		routine.car_id = ins_->raw_cars[i].id;
+		routine.roads = shortest_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
+		output_->routines.push_back(move(routine));
+	}
+	vector<Time> best_start_times;             
+	best_start_times.reserve(total_car_num);
+	Time best_schdeule_time = MAX_TIME;
+	vector<pair<Time, ID>> run_time;    
+	run_time.reserve(total_car_num);
+	for (auto car = ins_->raw_cars.begin(); car != ins_->raw_cars.end(); ++car) {
+		run_time.push_back(make_pair(
+			min_time_cost(car->id, car->from, car->to), car->id));
+	}
+	auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
+	auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
+	sort(run_time.begin(), run_time.end(), cmp_less); 
+	int binsearch_turn = 1;
+	//while (car_num_left <= car_num_right) {      
+	Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
+	//int car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+	int car_num_mid = 21;
+	vector<Time> start_times;
+	start_times.resize(total_car_num);
+	priority_queue<pair<Time, ID>, vector<pair<Time, ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
+	int start_car_num = 0;
+	Time current_time = 0;
+	vector<pair<Time, ID>> cars_run_time(run_time);
+	while (start_car_num < total_car_num) { //
+		for (int i = 0; i < cars_run_time.size() && pqueue.size() < car_num_mid; ++i) {
+			ID car_id = cars_run_time[i].second;
+			if (cars_run_time[i].first == MAX_TIME)
+				break;
+			if (ins_->raw_cars[car_id].plan_time <= current_time) {
+				pqueue.push(make_pair(cars_run_time.back().first + current_time, car_id));
+				start_times[car_id] = current_time;
+				++start_car_num;
+				cars_run_time[i].first = MAX_TIME;
+				//Log(Log::ZJL) << "car " << car_id << " start at time " << current_time << endl;
+			}
+		}
+		sort(cars_run_time.begin(), cars_run_time.end(), cmp_less);
+		while (!pqueue.empty()) {          
+			if (pqueue.top().first <= current_time) {
+				pqueue.pop();
+			}
+			else {
+				break;
+			}
+		}
+		current_time++;
+	}
+	Time latest_time = 0,temp_time;
+	for (int i = 0; i < start_times.size(); ++i) {
+		if (start_times[i] > latest_time) { 
+			latest_time = start_times[i]; 
+			RawCar *car = &ins_->raw_cars[i];
+			double speed;
+			temp_time = 0;
+			for (int j = 0; j < output_->routines[i].roads.size(); ++j) {
+				RawRoad *road = &ins_->raw_roads[output_->routines[i].roads[j]];
+				speed = min(car->speed, road->speed);
+				temp_time += (double)road->length / speed;
+			}
+		}
+		output_->routines[i].start_time = start_times[i];
+	}
+	Time cur_schedule_time = check_solution();
+	Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time <<"latest time: "<<latest_time<<" "<< temp_time << endl;
+	if (cur_schedule_time != -1) {                
+		car_num_left = car_num_mid + 1;
+		if (cur_schedule_time < best_schdeule_time) {  
+			best_schdeule_time = cur_schedule_time;
+			best_start_times = start_times;
+		}
+	}
+	else {
+		car_num_right = car_num_mid - 1;
+	}
+	//}
+	for (int i = 0; i < best_start_times.size(); ++i) {
+		output_->routines[i].start_time = best_start_times[i];
+	}
 }
-
 int Solver::check_solution()
 {
 	
@@ -221,6 +315,7 @@ int Solver::check_solution()
 		time_car[start_time].push_back(i);
 	}
 	inDst_num = 0;
+	cars_totalTime = 0;
 	/*for (int j = 0; j < car_size; ++j) {
 		Log(FY_TEST) << "car_id:" << ins_->changeToOriginalID(j, CarMap)<<"  ";
 		for (int i = 0; i < output_->routines[j].roads.size(); ++i) {
@@ -229,10 +324,10 @@ int Solver::check_solution()
 		Log(FY_TEST) << endl;
 	}*/
 	
-	for (int i = 0; i <= MAX_TIME; i++) {
-		if (i == 45) {
+	for ( t = 0; t <= MAX_TIME; t++) {
+		if (t == 5) {
 			int j;
-			j = i* 1;
+			j = t* 1;
 		}
 
 		for (int r = 0; r <double_road_size; ++r) {
@@ -299,7 +394,13 @@ int Solver::check_solution()
 										if (other_road->waitOutCarL.size() > 0) {
 											CarLocationOnRoad *first_carL = other_road->waitOutCarL[0];//获取第一优先级车辆
 											Road *other_next_road = getNextRoad(first_carL, cross);
-											if (other_next_road == next_road && first_carL->turn < carL->turn) {
+											if (other_next_road == NULL) {//其它车道上到达终点的车辆，要考虑直行冲突
+												if (topo.RoadTurn[other_road->raw_road->id][next_road->raw_road->id] == Front) {
+													conflict = true;
+													break;
+												}
+											}
+											else if ((other_next_road == next_road && first_carL->turn < carL->turn)) {
 												conflict = true;
 												break;
 											}
@@ -331,33 +432,42 @@ int Solver::check_solution()
 				break;
 		}
 
-		bool isValid = true;
-		for (int c = 0; c < cross_size && isValid; ++c) {
+		for (int c = 0; c < cross_size; ++c) {
 			Cross *cross = topo.crosses[c];
 			for (int k = 0; k < cross->road.size(); ++k) {
 				Road *road = cross->road[k];
 				if (road->waitOutCarL.size() > 0) {
-					isValid = false;
-					break;
+					return -1;
 				}
 			}
 		}
-		if (!isValid) {
-			return -1;
-		}
-
-		driveCarInGarage();
+		/*for (int c = 0; c < cross_size ; ++c) {
+			Cross *cross = topo.crosses[c];
+			for (int k = 0; k < cross->road.size(); ++k) {
+				Road *road = cross->road[k];
+				for (int ch = 0; ch < road->channel_carL.size(); ++ch) {
+					for (int cl = 0; cl < road->channel_carL[ch].size(); ++cl) {
+						CarLocationOnRoad *carL = road->channel_carL[ch][cl];
+						if (carL->state == STATE_waitRun) {
+							return -1;
+						}
+					}
+				}
+			}
+		}*/
 		if (inDst_num == car_size) {
-			cout << " the cost time of scheduler is " << i << endl;
-			return i;
+			cout << " the cost time of scheduler is " << t << endl;
+			cout << " the total time is" << cars_totalTime<<endl;
+			return t;
 		}
-		for (int j = 0; j < time_car[i].size(); j++) {//将所有该时刻要出发的车辆记录下来
-			ID first_road = output_->routines[time_car[i][j]].roads[0];
-			ID car_id = output_->routines[time_car[i][j]].car_id;
+		for (int j = 0; j < time_car[t].size(); j++) {//将所有该时刻要出发的车辆记录下来
+			ID first_road = output_->routines[time_car[t][j]].roads[0];
+			ID car_id = output_->routines[time_car[t][j]].car_id;
 			CarLocationOnRoad *new_carL = new CarLocationOnRoad;
 			new_carL->car_id = car_id;
 			new_carL->index = 0;
 			new_carL->state = STATE_start;
+			new_carL->start_time = t;
 			if (ins_->raw_roads[first_road].from == ins_->raw_cars[car_id].from) {
 				topo.roads[first_road]->willOnRoad.push_back(new_carL);
 			}
@@ -365,9 +475,10 @@ int Solver::check_solution()
 				topo.roads[first_road +road_size]->willOnRoad.push_back(new_carL);
 			}
 		}
+		driveCarInGarage();
 
 #if FY_TEST == 0
-		Log(FY_TEST) << "\n\n------------------- Time  " << i << "-------------------\n" << endl;
+		//Log(FY_TEST) << "\n\n------------------- Time  " << t << "-------------------\n" << endl;
 		for (int i = 0; i < road_size * 2; ++i) {
 			Road *road = topo.roads[i];
 			if (road != NULL) {
@@ -379,8 +490,8 @@ int Solver::check_solution()
 								cout << "road  error" << endl;
 
 							}
-							if (carL->channel_id!= c) {
-								cout << "error" <<endl;
+							if (carL->channel_id != c) {
+								cout << "error" << endl;
 							}
 						}
 						/*Log(FY_TEST) << road->raw_road->id << ": " << ins_->changeToOriginalID(road->from_id, CrossMap) << "\t"
@@ -406,9 +517,28 @@ int Solver::check_solution()
 					}
 
 				}
+
+				for (int c = 0; c < road->channel_carL.size(); ++c) {
+					if (road->channel_carL[c].size() > 0) {
+						for (int cL = road->channel_carL[c].size() - 1; cL >= 0; --cL) {
+							CarLocationOnRoad *carL = road->channel_carL[c][cL];
+							for (int cL1 = road->channel_carL[c].size() - 1; cL1 >= 0; --cL1) {
+								if (cL1 == cL) continue;
+								CarLocationOnRoad *carL1 = road->channel_carL[c][cL1];
+								if (carL->location == carL1->location)
+								{
+									cout << "In road " << road->raw_road->id << "location error";
+								}
+							}
+						}
+					}
+
+				}
 			}
-			
+
+
 		}
+		
 #endif // FY_TEST
 	}
 }
@@ -452,9 +582,6 @@ void Solver::driveAllCarJustOnRoadToEndState(Road *road)
 	for (int c = 0; c < road->channel_carL.size(); ++c) {//获取车道
 		for (int cL = 0; cL < road->channel_carL[c].size(); ++cL) {
 			CarLocationOnRoad *carL = road->channel_carL[c][cL];//车道内的车辆id及位置
-			if (carL->car_id == 1401) {
-				cout << "test" << endl;
-			}
 			Speed speed = min(ins_->raw_cars[carL->car_id].speed, road->raw_road->speed);
 			if (cL == 0) {//说明是车道内的第一辆车
 				if (carL->location + speed > road->raw_road->length) {//会出路口
@@ -471,10 +598,10 @@ void Solver::driveAllCarJustOnRoadToEndState(Road *road)
 					carL->location += speed;
 					carL->state = STATE_terminated;
 				}
-				else {
+				else 
+				{
 					if (prev_carL->state == STATE_terminated) {
-						speed = min(prev_carL->location - carL->location - 1, speed);
-						carL->location += speed;
+						carL->location = prev_carL->location  - 1;
 						carL->state = STATE_terminated;
 					}
 					else {
@@ -491,7 +618,7 @@ void Solver::driveCarInGarage()
 	for (int i = 0; i < rsize; ++i) {
 		Road *road = topo.roads[i];
 		if (road) {//假如有这样的路径
-			sort(road->willOnRoad.begin(), road->willOnRoad.end(), car_id_sort);
+			sort(road->willOnRoad.begin(), road->willOnRoad.end(), car_time_id_sort);
 			for (int j = 0; j < road->willOnRoad.size(); ++j) {//按照id顺序驶入道路
 				CarLocationOnRoad * carLWillOnRoad = road->willOnRoad[j]; 
 				Speed speed = min(road->raw_road->speed, ins_->raw_cars[carLWillOnRoad->car_id].speed);
@@ -581,6 +708,12 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 			carL->state = STATE_in_dst;
 			road->channel_carL[carL->channel_id].erase(road->channel_carL[carL->channel_id].begin());//第一个元素是最靠近路口的车辆
 			inDst_num++;
+			//cout << t << endl;
+			cars_totalTime += t - output_->routines[carL->car_id].start_time;
+		}
+		else {
+			cout << "out error";
+			exit(1);
 		}
 		return true;
 	}
@@ -627,6 +760,9 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 					carL->index += 1;
 					next_road->channel_carL[carL->channel_id].push_back(carL);
 					return true;
+				}
+				else if (last_carL->location <= V2 - S1 && last_carL->state == STATE_waitRun) {
+					return false;
 				}
 				//TODO:添加last_carL不阻挡
 			}
@@ -699,7 +835,7 @@ void Solver::init_solution_once() {
 		total_time += temp_time;
 		output_->routines.push_back(routine);
 	}*/
-	for (auto i = 0; i < 10; ++i) {
+	for (auto i = 0; i < 5; ++i) {
 		Routine routine;
 		RawCar car = ins_->raw_cars[i];
 		routine.car_id = car.id;
@@ -712,7 +848,7 @@ void Solver::init_solution_once() {
 
 		output_->routines.push_back(routine);
 	}
-	for (auto i = 10; i < car_size; ++i) {
+	for (auto i = 5; i < car_size; ++i) {
 		Routine routine;
 		RawCar car = ins_->raw_cars[i];
 		routine.car_id = car.id;

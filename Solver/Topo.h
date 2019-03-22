@@ -13,6 +13,7 @@ struct CarLocationOnRoad {
 	int index;//当前道路在路径中的index
 	ID channel_id;
 	Turn turn;
+	Time start_time;
 };
 typedef struct Cross Cross;
 typedef struct Road Road;

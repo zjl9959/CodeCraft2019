@@ -538,7 +538,7 @@ public:
         Error = On,
         Warning = On,
         Debug = On,
-        ZJL = Off,
+        ZJL = On,
         Info, // = Off.
     };
 
