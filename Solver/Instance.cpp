@@ -46,12 +46,12 @@ bool Instance::load(Environment & env) {
                 to = stoi(result[6]);
                 is_duplex = static_cast<bool>(stoi(result[7]));
                 raw_roads.push_back(move(RawRoad(
-                    changeToZeroID(id,RoadMap),
+                    id,
                     length,
                     speed,
                     channel,
-                    changeToZeroID(from,CrossMap),
-                    changeToZeroID(to,CrossMap),
+                    from,
+                    to,
                     is_duplex
                 )));
             }
@@ -87,9 +87,9 @@ bool Instance::load(Environment & env) {
                 speed = stoi(result[4]);
                 plan_time = stoi(result[5]);
                 raw_cars.push_back(move(RawCar(
-					changeToZeroID(id, CarMap),
-					changeToZeroID(from, CrossMap),
-					changeToZeroID(to, CrossMap),
+					id,
+					from,
+					to,
                     speed,
                     plan_time
                 )));
@@ -124,16 +124,63 @@ bool Instance::load(Environment & env) {
                 south = stoi(result[4]);
                 west = stoi(result[5]);
                 raw_crosses.push_back(move(RawCross(
-					changeToZeroID(id, CrossMap),
-                    north == -1 ? -1 : changeToZeroID(north, RoadMap),
-                    east == -1 ? -1 : changeToZeroID(east, RoadMap),
-                    south == -1 ? -1 : changeToZeroID(south, RoadMap),
-                    west == -1 ? -1 : changeToZeroID(west, RoadMap)
+					id,
+                    north,
+                    east,
+                    south,
+                    west
                 )));
             }
         }
         ifs.close();
     }
+    // 对各个ID进行排序和映射
+    vector<ID> roadId(raw_roads.size());
+    vector<ID> crossId(raw_crosses.size());
+    vector<ID> carId(raw_cars.size());
+    for (int i = 0; i < raw_roads.size(); ++i)
+        roadId[i] = raw_roads[i].id;
+    for (int i = 0; i < raw_crosses.size(); ++i)
+        crossId[i] = raw_crosses[i].id;
+    for (int i = 0; i < raw_cars.size(); ++i)
+        carId[i] = raw_cars[i].id;
+    // 不管连不连续，先从小到大排序
+    sort(roadId.begin(), roadId.end());
+    sort(crossId.begin(), crossId.end());
+    sort(carId.begin(), carId.end());
+    // 根据原来顺序重新映射
+    for (int i = 0; i < roadId.size(); ++i)
+        road_map.toConsecutiveId(roadId[i]);
+    for (int i = 0; i < crossId.size(); ++i)
+        cross_map.toConsecutiveId(crossId[i]);
+    for (int i = 0; i < carId.size(); ++i)
+        car_map.toConsecutiveId(carId[i]);
+    // 更新Instance中的ID
+    for (int i = 0; i < raw_roads.size(); ++i) {
+        raw_roads[i].id = road_map.toConsecutiveId(raw_roads[i].id);
+        raw_roads[i].from = cross_map.toConsecutiveId(raw_roads[i].from);
+        raw_roads[i].to = cross_map.toConsecutiveId(raw_roads[i].to);
+    }
+    for (int i = 0; i < raw_crosses.size(); ++i) {
+        raw_crosses[i].id = cross_map.toConsecutiveId(raw_crosses[i].id);
+        raw_crosses[i].north = raw_crosses[i].north == -1 ? -1 : road_map.toConsecutiveId(raw_crosses[i].north);
+        raw_crosses[i].east = raw_crosses[i].east == -1 ? -1 : road_map.toConsecutiveId(raw_crosses[i].east);
+        raw_crosses[i].south = raw_crosses[i].south == -1 ? -1 : road_map.toConsecutiveId(raw_crosses[i].south);
+        raw_crosses[i].west = raw_crosses[i].west == -1 ? -1 : road_map.toConsecutiveId(raw_crosses[i].west);
+        raw_crosses[i].road[0] = raw_crosses[i].north;
+        raw_crosses[i].road[1] = raw_crosses[i].east;
+        raw_crosses[i].road[2] = raw_crosses[i].south;
+        raw_crosses[i].road[3] = raw_crosses[i].west;
+    }
+    for (int i = 0; i < raw_cars.size(); ++i) {
+        raw_cars[i].id = car_map.toConsecutiveId(raw_cars[i].id);
+        raw_cars[i].from = cross_map.toConsecutiveId(raw_cars[i].from);
+        raw_cars[i].to = cross_map.toConsecutiveId(raw_cars[i].to);
+    }
+    // 这时候不一定是升序的，需要重新排序
+    sort(raw_roads.begin(), raw_roads.end(), [](RawRoad &lhs, RawRoad &rhs) {return lhs.id < rhs.id; });
+    sort(raw_crosses.begin(), raw_crosses.end(), [](RawCross &lhs, RawCross &rhs) {return lhs.id < rhs.id; });
+    sort(raw_cars.begin(), raw_cars.end(), [](RawCar &lhs, RawCar &rhs) {return lhs.id < rhs.id; });
     return valid;
 }
 

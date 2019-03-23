@@ -41,7 +41,7 @@ struct RawCross {
     ID east;                // 东/右方路
     ID west;                // 西/左方路
     ID south;               // 南/下方路
-    RawCross(ID Id, ID North, ID East, ID South, ID West) :id(Id), north(North), south(South), east(East) {
+    RawCross(ID Id, ID North, ID East, ID South, ID West) :id(Id), north(North), south(South), east(East), west(West) {
 		road[0] = North;
 		road[1] = East;
 		road[2] = South;
