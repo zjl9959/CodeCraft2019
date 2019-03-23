@@ -14,7 +14,7 @@ class Solver {
 public:
     Solver(Instance *ins, Output *output, Environment *env, Configure *cfg) :
         ins_(ins), output_(output), env_(env), cfg_(cfg) ,topo(ins),
-		aux(ins_->raw_crosses.size()){
+		aux(ins_->raw_crosses.size(),ins_->raw_roads.size()){
 		car_size = ins_->raw_cars.size();
 		road_size = ins_->raw_roads.size();
 		double_road_size = road_size * 2;
@@ -32,21 +32,23 @@ public:
 	void init_solution();
 	void init_solution_once();
     void binary_generate_solution();
+	void generate_futher_solution();
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time);
-	int check_solution();
+	int check_solution(const std::vector<Routine> &routines, Aux &aux);
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
 	void driveCarOnChannelToEndState(Road *road, int ch);
 	void driveCarInGarage();
-	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road);//记录可能会出路口的CarL
+	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road, const std::vector<Routine> &routines);//记录可能会出路口的CarL
 	void clearRoadVector();
-	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross);//根据当前路口和carL获取下一条道路的指针
+	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross, const std::vector<Routine> &routines);//根据当前路口和carL获取下一条道路的指针
 	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
 
 private:
     /*辅助计算*/
     Time min_time_cost(const ID car, const ID from, const ID to) const;
+	std::vector<Routine> temp_routines;//保存中间解
 protected:
     Instance* ins_;
 	int t;

@@ -11,6 +11,7 @@ struct CarLocationOnRoad {
 	STATE state;//车的状态
 	int location;//车在道路中的位置
 	int index;//当前道路在路径中的index
+	int indexInRoutine; //该车属于哪一个routine
 	ID channel_id;
 	Turn turn;
 	Time start_time;
@@ -53,7 +54,8 @@ struct InterRoutine {
 };
 struct Aux {
 	std::vector<std::vector<InterRoutine *>> **car_same;//出发点和起点及计划出发时间都相同的车辆
-	Aux(int cross_size) {
+	std::vector<std::vector<int>> roadNullNumOfTime; //每一条路随时间的空位数
+	Aux(int cross_size,int road_size) {
 		car_same = new std::vector<std::vector<InterRoutine *>>*[cross_size];
 		for (int i = 0; i < cross_size; i++) {
 			car_same[i] = new std::vector<std::vector<InterRoutine *>>[cross_size];
@@ -63,6 +65,7 @@ struct Aux {
 				car_same[i][j].resize(LATEST_PLAN_TIME);
 			}
 		}
+		roadNullNumOfTime.resize(road_size * 2);
 	}
 };
 class Topo {
