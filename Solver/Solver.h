@@ -32,6 +32,7 @@ public:
 	void init_solution();
 	void init_solution_once();
     void binary_generate_solution();
+	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time);
 	int check_solution();
 
 	/* 调度相关 */
@@ -39,6 +40,7 @@ public:
 	void driveCarOnChannelToEndState(Road *road, int ch);
 	void driveCarInGarage();
 	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road);//记录可能会出路口的CarL
+	void clearRoadVector();
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross);//根据当前路口和carL获取下一条道路的指针
 	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
 
