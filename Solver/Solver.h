@@ -49,6 +49,7 @@ private:
     /*辅助计算*/
     Time min_time_cost(const ID car, const ID from, const ID to) const;
 	std::vector<Routine> temp_routines;//保存中间解
+	std::vector<CarLocationOnRoad *> carL_inDst;//保存到达终点的carL指针
 protected:
     Instance* ins_;
 	int t;

@@ -207,7 +207,7 @@ void Solver::generate_futher_solution()
 			Time time = check_solution(temp_routines, aux);
 			for (int t1 = t+1; t1 < time_routine.size(); ++t1) {
 				if (time_routine[t1].size() > 0) {
-
+					
 				}
 			}
 			Log(FY_TEST) << t << "  :"<<time <<" size:"<<time_routine[t].size()<< endl;
@@ -259,8 +259,8 @@ Time Solver::changeTime(int total_car_num,int car_num_mid, vector<pair<Time, ID>
 
 int Solver::check_solution(const vector<Routine> &routines,Aux &aux)
 {
-	vector<ID> *time_car;
-	time_car = new vector<ID>[100000];
+	vector<vector<ID>> time_car;
+	time_car.resize(100000);
 	for (int i = 0; i < routines.size(); ++i) {
 		Time start_time = routines[i].start_time;
 		time_car[start_time].push_back(i);
@@ -628,12 +628,17 @@ void Solver::clearRoadVector()
 		for (int k = 0; k < cross->road.size(); ++k) {
 			Road *road = cross->road[k];
 			for (int ch = 0; ch < road->channel_carL.size(); ++ch) {
+
 				road->channel_carL[ch].clear();
 			}
 			road->waitOutCarL.clear();
 			road->willOnRoad.clear();
 		}
 	}
+	for (int i = 0; i < carL_inDst.size(); ++i) {
+		delete carL_inDst[i];
+	}
+	carL_inDst.clear();
 }
 
 Road* Solver::getNextRoad(CarLocationOnRoad * carL, Cross * cross, const vector<Routine> &routines)
@@ -663,6 +668,7 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 			carL->state = STATE_in_dst;
 			road->channel_carL[carL->channel_id].erase(road->channel_carL[carL->channel_id].begin());//第一个元素是最靠近路口的车辆
 			inDst_num++;
+			carL_inDst.push_back(carL);
 			//cout << t << endl;
 			/*cars_totalTime += t - output_->routines[carL->car_id].start_time;*/
 		}
