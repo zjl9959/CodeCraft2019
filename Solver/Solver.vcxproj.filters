@@ -36,6 +36,9 @@
     <ClCompile Include="Topo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Visualization.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Instance.h">
@@ -60,6 +63,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Topo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
