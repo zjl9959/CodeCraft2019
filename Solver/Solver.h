@@ -9,6 +9,12 @@
 #include "Solution.h"
 #include "Topo.h"
 namespace codecraft2019 {
+struct RAux {
+	RawCar *raw_car;
+	ID car_id;
+	Time cost_time;
+	Time start_time;
+};
 
 class Solver {
 public:
@@ -31,6 +37,7 @@ public:
     void init();
 	void init_solution();
 	void init_solution_once();
+	void init_solution_2();
     void binary_generate_solution();
 	void generate_futher_solution();
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time);
@@ -41,7 +48,7 @@ public:
 	void driveCarOnChannelToEndState(Road *road, int ch);
 	void driveCarInGarage();
 	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road, const std::vector<Routine> &routines);//记录可能会出路口的CarL
-	void clearRoadVector();
+	void clearRoadVector(int size);
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross, const std::vector<Routine> &routines);//根据当前路口和carL获取下一条道路的指针
 	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
 
@@ -60,6 +67,8 @@ protected:
 private:
 	Topo topo; 
 	Aux aux;
+	vector<RAux> rauxs;
+	TimeSlice timeslice;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	void read_from_file();
 	int car_size ;
