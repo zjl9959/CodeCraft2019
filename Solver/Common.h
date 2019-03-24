@@ -29,6 +29,15 @@ enum Turn { Front, Left, Right,  InvalidTurn };
 enum IDMap{RoadMap = 5000,CrossMap = 1,CarMap = 10000};
 enum STATE{STATE_waitRun,STATE_terminated, STATE_in_dst,STATE_start};
 
+struct CarInfo {
+    ID car_id;
+    Length pos;
+    Channel channel;
+    CarInfo(ID carId, Length position, Channel theChannel) :
+        car_id(carId), pos(position), channel(theChannel) {};
+};
+
+using TimeSlice = std::vector<std::vector<CarInfo>>; // [每一个时刻][每条道路]
 
 /***********定义输入输出路径环境***************/
 struct Environment {

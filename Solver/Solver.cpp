@@ -1,5 +1,7 @@
 #include "Solver.h"
 
+#include <set>
+
 using namespace std;
 
 namespace codecraft2019 {
@@ -133,6 +135,16 @@ void Solver::init_solution()
 	std::cout << "the latest time is" << latest_time << std::endl;
 }
 
+struct PairCmp {
+    bool operator()(const pair<Time, ID> &lhs, const pair<Time, ID> &rhs) {
+        if (lhs.first < rhs.first)
+            return true;
+        else if (lhs.first == rhs.first&&lhs.second < rhs.second)
+            return true;
+        else
+            return false;
+    }
+};
 
 // 构造初始解版本二
 void Solver::binary_generate_solution() {
@@ -156,9 +168,8 @@ void Solver::binary_generate_solution() {
         run_time.push_back(make_pair(
             min_time_cost(car->id, car->from, car->to), car->id));
     }
-    auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
-    auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
-    sort(run_time.begin(), run_time.end(), cmp_less);  // 在路上耗时少的车辆先出发。
+    sort(run_time.begin(), run_time.end(), [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {
+        return lhs.first < rhs.first; });  // 在路上耗时少的车辆先出发。
     int binsearch_turn = 1;
 	int car_num_mid = 1;
   //  while (car_num_left <= car_num_right) {      // 二分调参大法
@@ -218,31 +229,30 @@ void Solver::generate_futher_solution()
 
 Time Solver::changeTime(int total_car_num,int car_num_mid, vector<pair<Time, ID>> &run_time)
 {
-	auto cmp_less = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {return lhs.first < rhs.first; };
-	auto cmp_greater = [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) { return lhs.first > rhs.first; };
 	vector<Time> start_times;
 	start_times.resize(total_car_num);
-	priority_queue<pair<Time, ID>, vector<pair<Time, ID>>, decltype(cmp_greater)> pqueue(cmp_greater);
+    multiset<pair<Time, ID>, PairCmp> cars_run;
 	int start_car_num = 0;
 	Time current_time = 0;
 	vector<pair<Time, ID>> cars_run_time(run_time);
 	while (start_car_num < total_car_num) { // 按照不同的参数配置为每辆车设置出发时间。
-		for (int i = 0; i < cars_run_time.size() && pqueue.size() < car_num_mid; ++i) {
+		for (int i = 0; i < cars_run_time.size() && cars_run.size() < car_num_mid; ++i) {
 			ID car_id = cars_run_time[i].second;
 			if (cars_run_time[i].first == MAX_TIME)
 				break;
 			if (ins_->raw_cars[car_id].plan_time <= current_time) {
-				pqueue.push(make_pair(cars_run_time.back().first + current_time, car_id));
+                cars_run.insert(make_pair(cars_run_time.back().first + current_time, car_id));
 				start_times[car_id] = current_time;
 				++start_car_num;
 				cars_run_time[i].first = MAX_TIME;
 				// Log(Log::ZJL) << "car " << car_id << " start at time " << current_time << endl;
 			}
 		}
-		sort(cars_run_time.begin(), cars_run_time.end(), cmp_less);
-		while (!pqueue.empty()) {           // 弹出到达目的地的车辆
-			if (pqueue.top().first <= current_time) {
-				pqueue.pop();
+		sort(cars_run_time.begin(), cars_run_time.end(), [](pair<Time, ID> &lhs, pair<Time, ID> &rhs) {
+            return lhs.first < rhs.first; });
+		while (!cars_run.empty()) {           // 弹出到达目的地的车辆
+			if ((*cars_run.begin()).first <= current_time) {
+                cars_run.erase(cars_run.begin());
 			}
 			else {
 				break;
