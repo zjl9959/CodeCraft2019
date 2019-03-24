@@ -42,7 +42,7 @@ void Visualization::draw_time_slice(Time time) {
     else
         ofs << "' class='display:none;'" << endl;
     // 画出每一条车道
-    for (int i = 0; i < slice[time].size(); ++i) {
+    for (int i = 0; i < slice->at(time).size(); ++i) {
         draw_road(i, time);
     }
     // 为每个路口添加id
@@ -113,7 +113,7 @@ void Visualization::draw_road(ID id, Time time) {
             draw_line(basic_x, basic_y + channel * delt_y, basic_x + delt_x, basic_y + channel * delt_y);
     }
     // 画出来此条道路上的每一辆车
-    for (auto it = slice[time][id].begin(); it != slice[time][id].end(); ++it) {
+    for (auto it = slice->at(time)[id].begin(); it != slice->at(time)[id].end(); ++it) {
         if (rotate) {
             Length pos = it->pos;
             if (it->channel > channel)    // 说明车在反向车道上

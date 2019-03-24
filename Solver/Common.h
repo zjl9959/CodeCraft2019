@@ -38,7 +38,7 @@ struct CarInfo {
         car_id(carId), pos(position), channel(theChannel), state(State) {};
 };
 
-using TimeSlice = std::vector<std::vector<CarInfo>>; // [每一个时刻][每条道路]
+using TimeSlice = std::vector<std::vector<std::vector<CarInfo>>>; // [每一个时刻][每条道路]
 
 /***********定义输入输出路径环境***************/
 struct Environment {
