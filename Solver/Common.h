@@ -33,8 +33,9 @@ struct CarInfo {
     ID car_id;
     Length pos;
     Channel channel;
-    CarInfo(ID carId, Length position, Channel theChannel) :
-        car_id(carId), pos(position), channel(theChannel) {};
+    bool state;     // 0代表等待，1代表终止
+    CarInfo(ID carId, Length position, Channel theChannel, bool State) :
+        car_id(carId), pos(position), channel(theChannel), state(State) {};
 };
 
 using TimeSlice = std::vector<std::vector<CarInfo>>; // [每一个时刻][每条道路]

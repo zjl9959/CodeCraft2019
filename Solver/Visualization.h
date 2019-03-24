@@ -24,26 +24,28 @@ struct Coord {
 
 class Visualization {
 public:
-    static constexpr int width = 1000;
-    static constexpr int height = 1000;
-    static constexpr int slice_interval = 100;
+    static constexpr double scale = 1.0;
+    static constexpr int width = 1000 * scale;
+    static constexpr int height = 1000 * scale;
+    static constexpr int cross_size = 50 * scale;
 public:
-    Visualization(Instance *instance) :ins(instance) {};
+    Visualization(const Instance *instance, const TimeSlice *time_slice) :
+        ins(instance), slice(time_slice) {};
     void draw(std::string out_path);
     ~Visualization() { ins = nullptr; };
 protected:
-    void draw_time_slice();
-    void draw_cross(ID id);
-    void draw_road(ID id);
-    void draw_car(ID id);
-    void draw_Id(Coord pos, ID id, int size, bool rotate);
+    void draw_time_slice(Time time);
+    void draw_road(ID id, Time time);
+    void draw_Id(int x, int y, ID id, int size, bool rotate);
+    void draw_rectangle(int x, int y, int w, int h, std::string fill);
+    void draw_line(int x1, int y1, int x2, int y2);
     void add_script();
     void init_cross_pos();
 private:
-    Instance *ins;
+    const Instance *ins;
+    const TimeSlice *slice;  // 时间切片
     std::ofstream ofs;
     std::vector<Coord> cross_pos;   // 每个道路的相对坐标
-    int time = 0;
 };
 
 }
