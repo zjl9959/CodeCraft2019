@@ -18,14 +18,16 @@ void Visualization::draw(std::string out_path) {
         << "</head>" << endl
         << "<html>"
         << "<body>" << endl;
+    add_css();
     int time = 0;
     for (auto it = slice->cbegin(); it != slice->cend(); ++it) {
         draw_time_slice(time);
         ++time;
     }
-    ofs << "<text id='text_time'>Current Time:" << time << "</text>";
-    ofs << "<button onclick='prev()'>" << "<-" << "</button>";
-    ofs << "<button onclick='next()'>" << "->" << "</button>";
+    ofs << "<br><text>Current Time:</text>" << endl;
+    ofs << "<text id='text_time'>" << time << "</text>" << endl;
+    ofs << "<button onclick='prev()'>" << "<-" << "</button>" << endl;
+    ofs << "<button onclick='next()'>" << "->" << "</button>" << endl;
     add_script();
     ofs << "</body>"
         << "</html>";
@@ -46,9 +48,9 @@ void Visualization::draw_time_slice(Time time) {
         draw_road(i, time);
     }
     // 为每个路口添加id
-    int text_size = 5;
+    int text_size = 10;
     for (int i = 0; i < cross_pos.size(); ++i) {
-        draw_Id(cross_pos[i].x - text_size, cross_pos[i].y, i, text_size, 0);
+        draw_Id(cross_pos[i].x - text_size, cross_pos[i].y + text_size/2, i, text_size, 0);
     }
     ofs << "</svg>" << endl;
 }
@@ -64,45 +66,52 @@ void Visualization::draw_road(ID id, Time time) {
     bool rotate = (cross_pos[from].x == cross_pos[to].x);
     int basic_x, basic_y, delt_x, delt_y;   // basic_x,baisc_y基准点坐标；delt_x,delt_y车道宽度；
     if (rotate) {
-        delt_y = cross_pos[to].y - cross_pos[from].y;
-        if (delt_y > 0) {                                   // 从上到下
+        if (cross_pos[to].y > cross_pos[from].y) {          // 从上到下
             basic_x = cross_pos[from].x - cross_size / 2;
             basic_y = cross_pos[from].y + cross_size / 2;
             delt_x = channel_width;
+            delt_y = cross_pos[to].y - cross_pos[from].y - cross_size;
         } else {                                            // 从下到上
             basic_x = cross_pos[from].x + cross_size / 2;
             basic_y = cross_pos[from].y - cross_size / 2;
             delt_x = -channel_width;
+            delt_y = cross_pos[to].y - cross_pos[from].y + cross_size;
         }
     } else {
-        delt_x = cross_pos[to].x - cross_pos[from].x;
-        if (delt_x > 0) {                                   // 从左到右
+        if (cross_pos[to].x > cross_pos[from].x) {          // 从左到右
             basic_x = cross_pos[from].x + cross_size / 2;
             basic_y = cross_pos[from].y + cross_size / 2;
             delt_y = -channel_width;
+            delt_x = cross_pos[to].x - cross_pos[from].x - cross_size;
         } else {                                            // 从右到左
             basic_x = cross_pos[from].x - cross_size / 2;
             basic_y = cross_pos[from].y - cross_size / 2;
             delt_y = channel_width;
+            delt_x = cross_pos[to].x - cross_pos[from].x + cross_size;
         }
     }
     int ccount = 0;         // channel count, 代表当前是第几个车道
-    for (int i = 0; i < duplex; ++i) {
+    for (int i = 0; i <= duplex; ++i) {
         for (int j = 0; j < channel; ++j) {
             if (rotate)                         // 画车道
                 draw_rectangle(basic_x + ccount*delt_x, basic_y, delt_x, delt_y, COLOR_ROAD);
             else
                 draw_rectangle(basic_x, basic_y + ccount*delt_y, delt_x, delt_y, COLOR_ROAD);
+            /* 太占输出文件内存
             for (int l = 0; l < len; ++l) {     // 画道路长度刻度线
                 if (rotate)
                     draw_line(basic_x, basic_y + l * delt_y / len, basic_x + delt_x * channel*(duplex + 1), basic_y + l * delt_y / len);
                 else
                     draw_line(basic_x + l * delt_x / len, basic_y, basic_x + l * delt_x / len, basic_y + delt_y * channel*(duplex + 1));
             }
-            if (rotate)                         // 绘制道路id
-                draw_Id(basic_x - channel_width, basic_y + delt_y, id, channel_width, 0);
-            else
-                draw_Id(basic_x + delt_x, basic_y - channel_width, id, channel_width, 0);
+            */
+            if (i == 0) {
+                int font_size = min(10, channel_width);
+                if (rotate)                         // 绘制道路id
+                    draw_Id(basic_x + (delt_x > 0 ? -font_size : font_size), basic_y + delt_y / 2, id, font_size, 0);
+                else
+                    draw_Id(basic_x + delt_x / 2, basic_y + (delt_y > 0 ? -font_size : font_size), id, font_size, 0);
+            }
             ++ccount;
         }
     }
@@ -125,10 +134,10 @@ void Visualization::draw_road(ID id, Time time) {
                 delt_y/len,
                 it->state ? COLOR_CAR_STOP : COLOR_CAR_WAIT);
             draw_Id(                      // 画车的id
-                basic_x + delt_x * (it->channel + delt_x > 0 ? 0 : 1),
-                basic_y + (pos + delt_y > 0 ? 1 : 0) * delt_y/len,
+                basic_x + delt_x * (it->channel + (delt_x > 0 ? 0 : 1)),
+                basic_y + (pos + (delt_y > 0 ? 1 : 0)) * delt_y/len + 1,
                 it->car_id,
-                delt_y / len, 0);
+                (abs(delt_y) * 4) / (len * 5), 0);
         } else {
             Length pos = it->pos;
             if (it->channel > channel)
@@ -140,21 +149,22 @@ void Visualization::draw_road(ID id, Time time) {
                 delt_y,
                 it->state ? COLOR_CAR_STOP : COLOR_CAR_WAIT);
             draw_Id(
-                basic_x + (pos + delt_x > 0 ? 0 : 1)*delt_x / len,
-                basic_y + delt_y * (it->channel + delt_y > 0 ? 0 : 1),
+                basic_x + (pos + (delt_x > 0 ? 0 : 1))*delt_x / len,
+                basic_y + delt_y * (it->channel + (delt_y > 0 ? 0 : 1)) + 1,
                 it->car_id,
-                delt_x / len, 1);
+                (abs(delt_x) * 4) / (len * 5), 1);
         }
     }
 }
 
 // 如果不旋转，给出文本位于的矩形块左下角的坐标；如果旋转，给出右上角的坐标
 void Visualization::draw_Id(int x, int y, ID id, int size, bool rotate) {
+    if (size > 10)
+        size = 10;
     if (rotate)
         y += size;
-    ofs << "<text x='>" << x
+    ofs << "<text x='" << x
         << "' y='" << y
-        << "' fill=" << COLOR_TEXT
         << "' font-size='" << size;
     if (rotate) {
         ofs << "' transform='rotate(90 "
@@ -177,9 +187,8 @@ void Visualization::draw_rectangle(int x, int y, int w, int h, std::string fill)
         << "' y='" << y
         << "' width='" << w
         << "' height='" << h
-        << "' style='fill:" << fill
-        << ";stroke-width:1;stroke:rgb(0,0,0);'"
-        << "/>" << endl;
+        << "' fill='" << fill
+        << "'/>" << endl;
 }
 
 // 画一条白色的线，用于标记车道刻度
@@ -188,7 +197,7 @@ void Visualization::draw_line(int x1, int y1, int x2, int y2) {
         << "' y1='" << y1
         << "' x2='" << x2
         << "' y2='" << y2
-        << "' style='stroke:white;stroke-width:1;'/>" << endl;
+        << "'/>" << endl;
 }
 
 // 一次只显示一个时间片的SVG,prev()函数表示上一个，next()函数表示下一个
@@ -199,19 +208,42 @@ void Visualization::add_script() {
     // 定义prev函数
     ofs << "function prev() {" << endl
         << "    if(time==0)return;" << endl
-        << "    document.getElementById('svg'+time.toString()).style.display='none';" << endl
+        << "    doc1 = document.getElementById('svg'+time.toString());" << endl
+        << "    if(doc1!=null)doc1.style.display='none';" << endl
         << "    time=time-1;" << endl
-        << "    document.getElementById('svg'+time.toString()).style.display='yes';" << endl
+        << "    doc2 = document.getElementById('svg'+time.toString());" << endl
+        << "    if(doc2!=null)doc2.style.display='yes';" << endl
         << "    document.getElementById('text_time').innerHTML=time.toString();" << endl
         << "}" << endl;
     // 定义next函数
     ofs << "function next() {" << endl
-        << "    document.getElementById('svg'+time.toString()).style.display='none';" << endl
+        << "    doc1 = document.getElementById('svg'+time.toString());" << endl
+        << "    if(doc1!=null)doc1.style.display='none';" << endl
         << "    time=time+1;" << endl
-        << "    document.getElementById('svg'+time.toString()).style.display='yes';" << endl
+        << "    doc2 = document.getElementById('svg'+time.toString());" << endl
+        << "    if(doc2!=null)doc2.style.display='yes';" << endl
         << "    document.getElementById('text_time').innerHTML=time.toString();" << endl
         << "}" << endl;
     ofs << "</script>" << endl;
+}
+
+void Visualization::add_css() {
+    ofs << "<style>" << endl;
+    // 白色，1px粗细线条
+    ofs << "line {"
+        << "stroke:white;"
+        << "stroke-width:1;"
+        << "}" << endl;
+    // 矩形，轮廓宽为1，颜色为黑色
+    ofs << "rect {"
+        << "stroke-width:1;"
+        << "stroke:black;"
+        << "}" << endl;
+    // 黑色文本
+    ofs << "text {"
+        << "fill:" << COLOR_TEXT << ";"
+        << "}" << endl;
+    ofs << "</style>" << endl;
 }
 
 void Visualization::init_cross_pos() {
@@ -223,7 +255,6 @@ void Visualization::init_cross_pos() {
         return;
     // 从第一个点开始广搜，第一个点坐标为(0,0)
     q.push(ins->raw_crosses[0].id);
-    seen[ins->raw_crosses[0].id];
     cross_pos[ins->raw_crosses[0].id].x = 0;
     cross_pos[ins->raw_crosses[0].id].y = 0;
     int min_posx = INT_MAX, max_posx = INT_MIN, min_posy = INT_MAX, max_posy = INT_MIN;
@@ -236,16 +267,16 @@ void Visualization::init_cross_pos() {
             min_posy = cross_pos[cross].y;
         if (max_posx < cross_pos[cross].x)
             max_posx = cross_pos[cross].x;
-        if (max_posx < cross_pos[cross].y)
-            max_posx = cross_pos[cross].y;
+        if (max_posy < cross_pos[cross].y)
+            max_posy = cross_pos[cross].y;
         if (seen[cross])continue;
+        seen[cross] = true;
         ID north_road = ins->raw_crosses[cross].north;
         if (north_road != -1) {
             ID north_cross = ins->raw_roads[north_road].from == cross ?
                 ins->raw_roads[north_road].to : ins->raw_roads[north_road].from;
             cross_pos[north_cross].x = cross_pos[cross].x;
             cross_pos[north_cross].y = cross_pos[cross].y - 1;
-            seen[north_cross] = true;
             q.push(north_cross);
         }
         ID east_road = ins->raw_crosses[cross].east;
@@ -254,33 +285,32 @@ void Visualization::init_cross_pos() {
                 ins->raw_roads[east_road].to : ins->raw_roads[east_road].from;
             cross_pos[east_cross].x = cross_pos[cross].x + 1;
             cross_pos[east_cross].y = cross_pos[cross].y;
-            seen[east_cross] = true;
             q.push(east_cross);
         }
-        ID south_road = ins->raw_crosses[cross].north;
+        ID south_road = ins->raw_crosses[cross].south;
         if (south_road != -1) {
             ID south_cross = ins->raw_roads[south_road].from == cross ?
                 ins->raw_roads[south_road].to : ins->raw_roads[south_road].from;
             cross_pos[south_cross].x = cross_pos[cross].x;
             cross_pos[south_cross].y = cross_pos[cross].y + 1;
-            seen[south_cross] = true;
             q.push(south_cross);
         }
-        ID west_road = ins->raw_crosses[cross].north;
+        ID west_road = ins->raw_crosses[cross].west;
         if (west_road != -1) {
             ID west_cross = ins->raw_roads[west_road].from == cross ?
                 ins->raw_roads[west_road].to : ins->raw_roads[west_road].from;
             cross_pos[west_cross].x = cross_pos[cross].x - 1;
             cross_pos[west_cross].y = cross_pos[cross].y;
-            seen[west_cross] = true;
             q.push(west_cross);
         }
     }
     // 将cross_pos中的相对坐标转换为其在svg中的坐标。
-    int side_with = width * 0.02, side_height = height * 0.02;     // svg中留边大小
+    int side_with = width * 0.04, side_height = height * 0.04;     // svg中留边大小
     for (int i = 0; i < cross_pos.size(); ++i) {
-        cross_pos[i].x = (cross_pos[i].x - min_posx)*width / (max_posx - min_posx) + side_with;
-        cross_pos[i].y = (cross_pos[i].y - min_posy)*height / (max_posy - min_posy) + side_height;
+        cross_pos[i].x = (cross_pos[i].x - min_posx)*(width - 2 * side_with) /
+            (max_posx - min_posx) + side_with;
+        cross_pos[i].y = (cross_pos[i].y - min_posy)*(height - 2*side_height) /
+            (max_posy - min_posy) + side_height;
     }
 }
 

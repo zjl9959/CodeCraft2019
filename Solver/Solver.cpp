@@ -27,8 +27,8 @@ bool car_time_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *c
 }
 void Solver::run() {
     init();
-    //binary_generate_solution();
-	init_solution_2();
+    binary_generate_solution();
+	//init_solution_2();
 	/*init_solution_once();
 	if (check_solution(output_->routines,aux) == -1) {
 		Log(FY_TEST) << " dead lock\n";
@@ -298,6 +298,7 @@ int Solver::check_solution(const vector<Routine> &routines,Aux &aux)
 {
 	vector<vector<ID>> time_car;
 	time_car.resize(100000);
+    timeslice.clear();
 	for (int i = 0; i < routines.size(); ++i) {
 		Time start_time = routines[i].start_time;
 		time_car[start_time].push_back(i);

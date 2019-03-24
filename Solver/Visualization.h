@@ -13,7 +13,7 @@ namespace codecraft2019 {
 #define COLOR_CROSS "yellow"
 #define COLOR_CAR_WAIT "green"
 #define COLOR_CAR_STOP "red"
-#define COLOR_TEXT "white"
+#define COLOR_TEXT "black"
 
 struct Coord {
     int x;
@@ -25,7 +25,7 @@ struct Coord {
 class Visualization {
 public:
     static constexpr double scale = 1.0;
-    static constexpr int width = 1000 * scale;
+    static constexpr int width = 1200 * scale;
     static constexpr int height = 1000 * scale;
     static constexpr int cross_size = 50 * scale;
 public:
@@ -40,6 +40,7 @@ protected:
     void draw_rectangle(int x, int y, int w, int h, std::string fill);
     void draw_line(int x1, int y1, int x2, int y2);
     void add_script();
+    void add_css();
     void init_cross_pos();
 private:
     const Instance *ins;

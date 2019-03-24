@@ -51,7 +51,8 @@ public:
 	void clearRoadVector(int size);
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross, const std::vector<Routine> &routines);//根据当前路口和carL获取下一条道路的指针
 	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
-
+public:
+    TimeSlice timeslice;
 private:
     /*辅助计算*/
     Time min_time_cost(const ID car, const ID from, const ID to) const;
@@ -67,8 +68,7 @@ protected:
 private:
 	Topo topo; 
 	Aux aux;
-	vector<RAux> rauxs;
-	TimeSlice timeslice;
+	std::vector<RAux> rauxs;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	void read_from_file();
 	int car_size ;
@@ -77,7 +77,6 @@ private:
 	int cross_size;
 	int inDst_num;
 	int cars_totalTime;
-    // [TODO]添加算法用到的数据结构
 };
 
 }
