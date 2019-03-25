@@ -13,7 +13,15 @@ struct RAux {
 	RawCar *raw_car;
 	ID car_id;
 	Time cost_time;
-	Time start_time;
+	bool **subPath; //该车辆的最短路包含的子路径
+	RAux(int cross_size, Time cost_time, RawCar *raw_car, ID car_id) :
+		cost_time(cost_time) ,raw_car(raw_car),car_id(car_id) {
+		subPath = new bool*[cross_size]();
+		for (int i = 0; i < cross_size; ++i) {
+			subPath[i] = new bool[cross_size]();
+		}
+	}
+	RAux() {}
 };
 
 class Solver {
@@ -67,9 +75,10 @@ protected:
 private:
 	Topo topo; 
 	Aux aux;
-	vector<RAux> rauxs;
+	std::vector<RAux> rauxs;
 	TimeSlice timeslice;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
+	List<List<List<ID>>> shortest_cross_paths; // 任意两点间最短路径经过的路口
 	void read_from_file();
 	int car_size ;
 	int road_size ;

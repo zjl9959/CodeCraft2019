@@ -27,8 +27,9 @@ bool car_time_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *c
 }
 void Solver::run() {
     init();
-    //binary_generate_solution();
-	init_solution_2();
+	//init_solution();
+    binary_generate_solution();
+	//init_solution_2();
 	/*init_solution_once();
 	if (check_solution(output_->routines,aux) == -1) {
 		Log(FY_TEST) << " dead lock\n";
@@ -50,20 +51,26 @@ void Solver::testIO() {
 // 在运行算法之前需要做一些初始化的动作。
 void Solver::init() {
     // 保存两点之间的最短路径到shortest_paths
-    shortest_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size/3);
+	shortest_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size / 3);
+	shortest_cross_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size/3);
     shortest_paths.resize(topo.cross_size);
+	shortest_cross_paths.resize(topo.cross_size);
+
     Log(Log::ZJL) << "\t------shortest path--------" << endl;
     Log(Log::ZJL) << "cross size:" << topo.cross_size << endl;
     for (ID i = 0; i < topo.cross_size; ++i) {
         shortest_paths[i].resize(topo.cross_size);
+		shortest_cross_paths[i].resize(topo.cross_size);
         for (ID j = 0; j < topo.cross_size; ++j) {
             //Log(Log::ZJL) << "from " << i << " to " << j << ":";
             if (topo.pathID[i][j] != INVALID_ID) {
                 ID temp = i;
+				shortest_cross_paths[i][j].push_back(temp);
                 while (temp != j && temp != INVALID_ID) {
                     ID next = topo.pathID[temp][j];
                     shortest_paths[i][j].push_back(topo.adjRoadID[temp][next]);
                     temp = next;
+					shortest_cross_paths[i][j].push_back(temp);
                     //Log(Log::ZJL) << shortest_paths[i][j].back() << " ";
                 }
             }
@@ -78,13 +85,15 @@ void Solver::init_solution()
 	int car_size = ins_->raw_cars.size();
 	int cross_size = ins_->raw_crosses.size();
 	ID temp, next;
-	Time temp_time,latest_time=-1;
-	Speed speed=0;
+	Time temp_time, latest_time = -1;
+	Speed speed = 0;
 	//vector<Car> notPlanCar;
+
 	for (auto i = 0; i < car_size; ++i) {
 		Routine routine;
 		RawCar *raw_car = &ins_->raw_cars[i];
 		routine.car_id = raw_car->id;
+		routine.start_time = raw_car->plan_time; //xxf:先将routine的出发时间记录为车的原始出发时间
 		if (raw_car->plan_time > latest_time) latest_time = raw_car->plan_time;
 		temp = raw_car->from;
 		while (temp != raw_car->to)
@@ -100,42 +109,28 @@ void Solver::init_solution()
 			speed = min(road.speed, raw_car->speed);
 			temp_time += road.length / speed;
 		}//计算没有拥堵时的耗时
-		InterRoutine *interR = new InterRoutine(topo.cars[i],temp_time);
-		output_->routines.push_back(routine);//使用最短路，此时routine的出发时间还未确定
+		InterRoutine *interR = new InterRoutine(topo.cars[i], temp_time);
+		//routine.cost_time = temp_time;     //xxf:记录每辆车路径的临时消耗时间
+		output_->routines.push_back(move(routine));//使用最短路，此时routine的出发时间还未确定
+		output_->routines[i].cost_time = temp_time;
 		aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
 	}
 
-	
+
 	/**接下来调整车辆的实际出发时间*/
-	vector<Routine *> *time_car;
-	time_car = new vector<Routine *>[latest_time+1];
+	vector<Routine *> *time_car;             //xxf:将出发时间相同的车的routine 放入一个vector
+	time_car = new vector<Routine *>[latest_time + 1];
 	for (int i = 0; i < car_size; ++i) {
 		Time start_time = ins_->raw_cars[i].plan_time;
 		time_car[start_time].push_back(&output_->routines[i]);
 	}
-	/*for (int i = 0; i <= latest_time; ++i) {
-		if (time_car[i].size()>0){
-			std::cout << "the plan time is" << i << " the carnum is"<<time_car[i].size()<<std::endl;
-			int cnt = i;
-			while (time_car[i].size() != 0)
-			{
-				int hasChoose = 0;
-				for (int j = 0; j < time_car[i].size(); ++j) {
-					if ((rand() % (time_car[i].size() - j)) < (150 - hasChoose)) {
-						time_car[i][j]->start_time = cnt;
-						hasChoose++;
-					}
-					else {
-						time_car[i][j]->start_time = cnt + 1;
-					}
-				}
+	
+	
 
-			}
-		}
-		
-	}*/
-	std::cout << "the latest time is" << latest_time << std::endl;
+	Time time = check_solution(output_->routines, aux);
+	std::cout << "the cost time is" << time << std::endl;
 }
+
 
 struct PairCmp {
     bool operator()(const pair<Time, ID> &lhs, const pair<Time, ID> &rhs) {
@@ -174,23 +169,23 @@ void Solver::binary_generate_solution() {
         return lhs.first < rhs.first; });  // 在路上耗时少的车辆先出发。
     int binsearch_turn = 1;
 	int car_num_mid = 1;
-    while (car_num_left <= car_num_right) {      // 二分调参大法
-        Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
-		car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
-		Time current_time = changeTime(total_car_num, car_num_mid, run_time);
-        Time cur_schedule_time = check_solution(output_->routines,aux);
-		Log(Log::ZJL) << car_num_mid << endl;
-        Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
-        if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
-            car_num_left = car_num_mid + 1;
-            //if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
-            //    best_schdeule_time = cur_schedule_time;
-            //    best_start_times = start_times;
-            //}
-        } else {
-            car_num_right = car_num_mid - 1;
-        }
-    }
+  //  while (car_num_left <= car_num_right) {      // 二分调参大法
+  //      Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
+		//car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+		//Time current_time = changeTime(total_car_num, car_num_mid, run_time);
+  //      Time cur_schedule_time = check_solution(output_->routines,aux);
+		//Log(Log::ZJL) << car_num_mid << endl;
+  //      Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
+  //      if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
+  //          car_num_left = car_num_mid + 1;
+  //          //if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
+  //          //    best_schdeule_time = cur_schedule_time;
+  //          //    best_start_times = start_times;
+  //          //}
+  //      } else {
+  //          car_num_right = car_num_mid - 1;
+  //      }
+  //  }
 	{
 		car_num_mid -= 2;
 		if (check_solution(output_->routines, aux) == -1) {
@@ -203,7 +198,7 @@ void Solver::binary_generate_solution() {
 		
 
 	}
-	generate_futher_solution();
+	//generate_futher_solution();
 
 }
 
@@ -931,12 +926,12 @@ void Solver::init_solution_once() {
 }
 void Solver::init_solution_2()
 {
-	rauxs.resize(car_size);
+	rauxs.reserve(car_size);
 	for (int i = 0; i < car_size; ++i) {   // 每辆车都走最短路径
 		Routine routine;
-		RAux raux;
 		routine.car_id = ins_->raw_cars[i].id;
 		routine.roads = shortest_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
+		routine.crosses = shortest_cross_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
 		Speed car_speed = ins_->raw_cars[i].speed;
 		Time cost_time =0;
 		for (int i = 0; i < routine.roads.size(); ++i) {
@@ -944,30 +939,78 @@ void Solver::init_solution_2()
 			Speed speed = min(car_speed, raw_road->speed);
 			cost_time += raw_road->length / speed;
 		}
-		raux.cost_time = cost_time;
-		raux.raw_car = &ins_->raw_cars[i];
-		raux.car_id = routine.car_id;
+		RAux raux(cross_size,cost_time,&ins_->raw_cars[i],routine.car_id);
 		rauxs.push_back(move(raux));
 		output_->routines.push_back(move(routine));
 	}
-	sort(rauxs.begin(), rauxs.end(), raux_sort);//按照消耗时间排序
-	int car_numInTime = 20;
-	vector<Routine> end_routines;
-	for (int t = 0; t <= MAX_TIME ; ++t) {
-		if (rauxs.size() == 0) break;
-		
-		int  cnt = 0;
-		for (vector<RAux>::iterator iter = rauxs.begin();
-			iter <= rauxs.end(); ++iter) {
-			if (cnt > car_numInTime)break;
-			if ((*iter).raw_car->plan_time <= t) {//说明可以在该时刻出发
-				cnt++;
-				output_->routines[(*iter).car_id].start_time = t;
-				end_routines.push_back(move(output_->routines[(*iter).car_id]));
-				temp_routines.push_back(move(output_->routines[(*iter).car_id]));
+	vector<vector<RAux>> Rtypes;
+	for (int i = 0; i < output_->routines.size(); ++i) {
+		Routine *routine = &output_->routines[i];
+		for (int j = 0; j < routine->crosses.size(); ++j) {
+			for (int k = j+1; k < routine->crosses.size(); ++k) {
+				rauxs[i].subPath[routine->crosses[j]][routine->crosses[k]] = true;
 			}
 		}
-		Time cost_time = check_solution(temp_routines, aux);
+		/*for (int j = 0; j < topo.crosses.size(); ++j) {
+			for (int k = 0; k < topo.crosses.size(); ++k) {
+				if (rauxs[i].subPath[j][k] == true)
+					cout << "from :" << j << " to: " << k << endl;
+			}
+		}
+		cout << endl;*/
 	}
+	sort(rauxs.begin(), rauxs.end(), raux_sort);//按照消耗时间排序
+
+	for (int i = 0; i < rauxs.size(); ++i) {
+		ID from = rauxs[i].raw_car->from, to = rauxs[i].raw_car->to;
+		bool notfind = true;
+		for (int t = 0; t < Rtypes.size() && notfind; ++t) {
+			for (int j = 0; j < Rtypes[t].size(); ++j) {
+				ID from2 = Rtypes[t][j].raw_car->from, to2 = Rtypes[t][j].raw_car->to;
+				if (Rtypes[t][j].subPath[from][to] || rauxs[i].subPath[from2][to2]){
+					//|| Rtypes[t][j].subPath[to][from] || rauxs[i].subPath[to2][from2]) {
+					Rtypes[t].push_back(rauxs[i]);
+					notfind = false;
+					break;
+				}
+			}
+		}
+		if (notfind) {
+			vector<RAux> rtype;
+			rtype.push_back(rauxs[i]);
+			Rtypes.push_back(rtype);
+		}
+	}
+	for (int i = 0; i < Rtypes.size(); ++i) {
+		Log(FY_TEST) << "type " << i << endl;
+		for (int j = 0; j < Rtypes[i].size(); ++j) {
+			Log(FY_TEST) << Rtypes[i][j].car_id<<"  ";
+		}
+		Log(FY_TEST) << endl;
+
+	}
+	for (int i = 0; i < Rtypes.size(); ++i) {
+		for (int j = 0; j < Rtypes[i].size(); ++j) {
+			
+		}
+	}
+	//int car_numInTime = 20;
+	//vector<Routine> end_routines;
+	//for (int t = 0; t <= MAX_TIME ; ++t) {
+	//	if (rauxs.size() == 0) break;
+	//	
+	//	int  cnt = 0;
+	//	for (vector<RAux>::iterator iter = rauxs.begin();
+	//		iter <= rauxs.end(); ++iter) {
+	//		if (cnt > car_numInTime)break;
+	//		if ((*iter).raw_car->plan_time <= t) {//说明可以在该时刻出发
+	//			cnt++;
+	//			output_->routines[(*iter).car_id].start_time = t;
+	//			end_routines.push_back(move(output_->routines[(*iter).car_id]));
+	//			temp_routines.push_back(move(output_->routines[(*iter).car_id]));
+	//		}
+	//	}
+	//	Time cost_time = check_solution(temp_routines, aux);
+	//}
 }
 }
