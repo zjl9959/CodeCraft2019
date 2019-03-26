@@ -48,7 +48,7 @@ public:
 	void init_solution_2();
     void binary_generate_solution();
 	void generate_futher_solution();
-	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time);
+	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux);
 
 	/* 调度相关 */
@@ -58,8 +58,9 @@ public:
 	void recordProbOutCross(CarLocationOnRoad *carL,Cross *cross,Road *road, const std::vector<Routine> &routines);//记录可能会出路口的CarL
 	void clearRoadVector(int size);
 	Road* getNextRoad(CarLocationOnRoad * carL, Cross *cross, const std::vector<Routine> &routines);//根据当前路口和carL获取下一条道路的指针
-	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL);
-
+	bool moveToNextRoad(Road *road,Road *next_road,CarLocationOnRoad *carL, const std::vector<Routine> &routines);
+public:
+    TimeSlice timeslice;
 private:
     /*辅助计算*/
     Time min_time_cost(const ID car, const ID from, const ID to) const;
@@ -76,7 +77,6 @@ private:
 	Topo topo; 
 	Aux aux;
 	std::vector<RAux> rauxs;
-	TimeSlice timeslice;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	List<List<List<ID>>> shortest_cross_paths; // 任意两点间最短路径经过的路口
 	void read_from_file();
@@ -86,7 +86,6 @@ private:
 	int cross_size;
 	int inDst_num;
 	int cars_totalTime;
-    // [TODO]添加算法用到的数据结构
 };
 
 }

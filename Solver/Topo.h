@@ -54,7 +54,9 @@ struct InterRoutine {
 };
 struct Aux {
 	std::vector<std::vector<InterRoutine *>> **car_same;//出发点和起点及计划出发时间都相同的车辆
-	std::vector<std::vector<int>> roadNullNumOfTime; //每一条路随时间的空位数
+	//std::vector<std::vector<std::vector<int>>> roadNullNumOfTime; //道路i->j 随时间的空位数
+	//std::vector<std::vector<int>> type_numTime; //某一时刻达到终点的某一类车的数目
+	//int type_num;
 	Aux(int cross_size,int road_size) {
 		car_same = new std::vector<std::vector<InterRoutine *>>*[cross_size];
 		for (int i = 0; i < cross_size; i++) {
@@ -65,7 +67,6 @@ struct Aux {
 				car_same[i][j].resize(LATEST_PLAN_TIME);
 			}
 		}
-		roadNullNumOfTime.resize(road_size * 2);
 	}
 };
 class Topo {

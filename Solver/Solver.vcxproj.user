@@ -2,20 +2,20 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(SolutionDir)Deploy\$(TargetFileName)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config_11\car.txt $(SolutionDir)Deploy\Instance\config_11\road.txt $(SolutionDir)Deploy\Instance\config_11\cross.txt $(SolutionDir)Deploy\Solution\answer.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(SolutionDir)Deploy\$(TargetFileName)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>$(SolutionDir)Deploy\Instance\config_11\car.txt $(SolutionDir)Deploy\Instance\config_11\road.txt $(SolutionDir)Deploy\Instance\config_11\cross.txt $(SolutionDir)Deploy\Solution\answer.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_9\answer.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_12\answer.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_11\car.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_11\road.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_11\cross.txt F:\找工作\codecraft2019\CodeCraft2019\Deploy\Instance\config_11\answer.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
