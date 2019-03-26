@@ -212,7 +212,7 @@ void Visualization::add_script() {
         << "    if(doc1!=null)doc1.style.display='none';" << endl
         << "    time=time-1;" << endl
         << "    doc2 = document.getElementById('svg'+time.toString());" << endl
-        << "    if(doc2!=null)doc2.style.display='yes';" << endl
+        << "    if(doc2!=null)doc2.style.display='inline';" << endl
         << "    document.getElementById('text_time').innerHTML=time.toString();" << endl
         << "}" << endl;
     // ¶¨Òånextº¯Êý
@@ -221,7 +221,7 @@ void Visualization::add_script() {
         << "    if(doc1!=null)doc1.style.display='none';" << endl
         << "    time=time+1;" << endl
         << "    doc2 = document.getElementById('svg'+time.toString());" << endl
-        << "    if(doc2!=null)doc2.style.display='yes';" << endl
+        << "    if(doc2!=null)doc2.style.display='inline';" << endl
         << "    document.getElementById('text_time').innerHTML=time.toString();" << endl
         << "}" << endl;
     ofs << "</script>" << endl;

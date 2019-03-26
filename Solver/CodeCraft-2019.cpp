@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
 	//solver.init_solution_once();
 	//solver.check_solution();
     output.save(env);
-    //Visualization vis(&ins, &solver.timeslice);
-   // vis.draw("F:\\找工作\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\config_0.html");
+    Visualization vis(&ins, &solver.timeslice);
+    vis.draw("F:\\找工作\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\config_0.html");
 
 	return 0;
 }

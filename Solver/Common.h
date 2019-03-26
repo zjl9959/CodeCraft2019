@@ -15,7 +15,7 @@ namespace codecraft2019 {
 #define MAX_CROSS_ROAD_NUM 4
 #define TURN_NUM 3
 #define LATEST_PLAN_TIME 11
-#define FY_TEST 1
+#define FY_TEST 0
 using ID = int;
 using Length = int;
 using Speed = int;

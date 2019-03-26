@@ -48,6 +48,7 @@ public:
 	void init_solution_2();
     void binary_generate_solution();
 	void generate_futher_solution();
+	void handle_deadLock();
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux);
 
@@ -79,6 +80,7 @@ private:
 	std::vector<RAux> rauxs;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	List<List<List<ID>>> shortest_cross_paths; // 任意两点间最短路径经过的路口
+	List<ID> dead_lockCar;
 	void read_from_file();
 	int car_size ;
 	int road_size ;
