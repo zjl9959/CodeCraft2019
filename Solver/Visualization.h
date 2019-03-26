@@ -25,9 +25,9 @@ struct Coord {
 class Visualization {
 public:
     static constexpr double scale = 1.0;
-    static constexpr int width = 1200*5 * scale;
-    static constexpr int height = 1000*5 * scale;
-    static constexpr int cross_size = 100 * scale;
+    static constexpr int width = 1300 * scale;
+    static constexpr int height = 1000 * scale;
+    static constexpr int cross_size = 50 * scale;
 public:
     Visualization(const Instance *instance, const TimeSlice *time_slice) :
         ins(instance), slice(time_slice) {};

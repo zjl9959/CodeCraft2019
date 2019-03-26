@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
 	//solver.check_solution();
     output.save(env);
     Visualization vis(&ins, &solver.timeslice);
-    vis.draw("F:\\ÕÒ¹¤×÷\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\config_0.html");
+    string zjl_laptop_path = "E:\\2019\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\config_1.html";
+    vis.draw(zjl_laptop_path);
 
 	return 0;
 }
