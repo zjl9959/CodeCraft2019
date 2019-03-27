@@ -15,13 +15,15 @@ struct CarLocationOnRoad {
 	ID channel_id;
 	Turn turn;
 	Time start_time;
+	int real_speed; //车辆的实际行驶速度
 };
 typedef struct Cross Cross;
 typedef struct Road Road;
 
 struct Cross {
 	RawCross *raw_cross;
-	std::vector<Road *> road;
+	std::vector<Road *> road;//出路口方向的路
+	std::vector<Road *> inCrossRoad;//入路口方向的路
 	Cross(RawCross *raw_cross) {
 		this->raw_cross = raw_cross;
 	}
@@ -30,12 +32,14 @@ struct Road {
 	RawRoad *raw_road;
 	Cross *from, *to;
 	ID from_id, to_id;
+	int vacancy_thresh; // 空位数阈值
 	std::vector<std::vector<CarLocationOnRoad *>> channel_carL;
 	std::vector<CarLocationOnRoad *> waitOutCarL;
 	std::vector<CarLocationOnRoad *> willOnRoad;
 	Road(RawRoad *raw_road,Cross *from,Cross *to):raw_road(raw_road),from(from),to(to) {
 		from_id = from->raw_cross->id;
 		to_id = to->raw_cross->id;
+		vacancy_thresh = (raw_road->channel*raw_road->length*1.0) / 2.0;
 	}
 
 };

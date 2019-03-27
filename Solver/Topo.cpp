@@ -148,6 +148,11 @@ void Topo::init_myTopo()
 	for (int i = 0; i < cross_size; ++i) {
 		adjRoad[i] = new Road*[cross_size]();
 	}
+	for (int i = 0; i < car_size; ++i) {
+		cars[i]->from = crosses[ins_->raw_cars[i].from];
+		cars[i]->to = crosses[ins_->raw_cars[i].to];
+
+	}
 	for (int i = 0; i < rsize; ++i) {
 		ID from = ins_->raw_roads[i].from;
 		ID to = ins_->raw_roads[i].to;
@@ -172,9 +177,15 @@ void Topo::init_myTopo()
 			ID road_id = raw_cross->road[j];
 			if (road_id != INVALID_ID) {
 				if(roads[road_id]->to_id == raw_cross->id)
-					crosses[i]->road.push_back(roads[raw_cross->road[j]]);
+					crosses[i]->road.push_back(roads[road_id]);
 				else if(roads[road_id+rsize] && roads[road_id + rsize]->to_id == raw_cross->id)
 					crosses[i]->road.push_back(roads[road_id +rsize ]);
+
+				if (roads[road_id]->from_id == raw_cross->id)
+					crosses[i]->inCrossRoad.push_back(roads[road_id]);
+				else if(roads[road_id+rsize] && roads[road_id + rsize]->from_id == raw_cross->id)
+					crosses[i]->inCrossRoad.push_back(roads[road_id + rsize]);
+
 			}
 		}
 		sort(crosses[i]->road.begin(), crosses[i]->road.end(), road_sort);//每个路口的车按照车辆id升序排列

@@ -43,6 +43,13 @@ struct Routine {
         crosses.swap(rhs.crosses);
         return *this;
     }
+	void printRoads() {
+		Log(FY_TEST) << "car_id"<<car_id;
+		for (int i = 0; i < roads.size(); ++i) {
+			Log(FY_TEST) << " " << roads[i];
+		}
+		Log(FY_TEST) << "\n";
+	}
 };
 
 struct Output {

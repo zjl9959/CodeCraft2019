@@ -23,7 +23,10 @@ struct RAux {
 	}
 	RAux() {}
 };
-
+struct RoadCondition {
+	int vacancy_num;//空位数
+	double avg_speed_ratio; //道路上的车辆的实际行驶速度与最大速度的比值的平均值
+};
 class Solver {
 public:
     Solver(Instance *ins, Output *output, Environment *env, Configure *cfg) :
@@ -49,8 +52,11 @@ public:
     void binary_generate_solution();
 	void generate_futher_solution();
 	void handle_deadLock();
+	void local_search();
+	void AStar_search(Time start_time, Car *car);
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux);
+	void get_routines_cost_time();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
@@ -65,7 +71,6 @@ public:
 private:
     /*辅助计算*/
     Time min_time_cost(const ID car, const ID from, const ID to) const;
-	std::vector<Routine> temp_routines;//保存中间解
 	std::vector<CarLocationOnRoad *> carL_inDst;//保存到达终点的carL指针
 protected:
     Instance* ins_;
@@ -80,6 +85,8 @@ private:
 	std::vector<RAux> rauxs;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	List<List<List<ID>>> shortest_cross_paths; // 任意两点间最短路径经过的路口
+	List<List<List<RoadCondition>>> time_road_condition; //每个时间片的路况
+	List<std::pair<ID,int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
 	List<ID> dead_lockCar;
 	void read_from_file();
 	int car_size ;
@@ -88,6 +95,8 @@ private:
 	int cross_size;
 	int inDst_num;
 	int cars_totalTime;
+	int latest_real_start_time;
+	int latest_start_time;
 };
 
 }

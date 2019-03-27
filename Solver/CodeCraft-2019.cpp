@@ -41,10 +41,18 @@ int main(int argc, char *argv[])
     output.save(env);
 
 #ifdef _WIN32
-    Visualization vis(&ins, &solver.timeslice);
-    string zjl_laptop_path = "E:\\2019\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\config_1.html";
-    string zjl_smart_path = "E:\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\config_12.html";
-    vis.draw(zjl_smart_path);
+	int t = 0;
+	string zjl_laptop_path = "F:\\ÕÒ¹¤×÷\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\";
+	string zjl_smart_path = "E:\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\";
+
+	while (t <solver.timeslice.size())
+	{
+		int end = min((int)solver.timeslice.size() - t-1, 49);
+		TimeSlice temp_slice(solver.timeslice.begin()+t, solver.timeslice.begin() + t+ end);
+		Visualization vis(&ins, &temp_slice);
+		vis.draw(zjl_laptop_path +to_string(t)+"-"+ to_string(t+end)+".html");
+		t += end+1;
+	}
 #endif // _WIN32
 
 	return 0;
