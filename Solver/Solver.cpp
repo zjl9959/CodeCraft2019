@@ -1297,8 +1297,13 @@ void Solver::get_routines_cost_time()
 	Log(FY_TEST) << max_cost_time << endl;
 }
 
-void Solver::AStar_search(Time start_time, Car * car)
+// 返回最优的目标函数值
+int Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
 {
+    multimap<Time, ID> pqueue;
+    List<ID> prev_cross(ins_->raw_crosses.size(), -1);
+    List<Time> cost_table(ins_->raw_crosses.size(), MAX_TIME);
+
 }
 
 }

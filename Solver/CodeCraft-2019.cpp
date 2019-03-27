@@ -42,8 +42,9 @@ int main(int argc, char *argv[])
 
 #ifdef _WIN32
 	int t = 0;
-	string zjl_laptop_path = "F:\\找工作\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\";
+	string fangyuan_path = "F:\\找工作\\codecraft2019\\CodeCraft2019\\Deploy\\Visualization\\";
 	string zjl_smart_path = "E:\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\";
+    string zjl_laptop_path = "E:\\2019\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\";
 
 	while (t <solver.timeslice.size())
 	{
