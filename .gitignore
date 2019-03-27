@@ -252,3 +252,6 @@ ModelManifest.xml
 /Deploy/log*.csv
 *.vcxproj
 /Checker/*.vcxproj
+/*.sln
+/Solver/*.filters
+/Solver/Solver.vcxproj.user
