@@ -1,7 +1,11 @@
 #include <iostream>
 
 #include "Solver.h"
+
+#ifdef _WIN32
 #include "Visualization.h"
+#endif // _WIN32
+
 
 using namespace std;
 using namespace codecraft2019;
@@ -35,9 +39,13 @@ int main(int argc, char *argv[])
 	//solver.init_solution_once();
 	//solver.check_solution();
     output.save(env);
+
+#ifdef _WIN32
     Visualization vis(&ins, &solver.timeslice);
     string zjl_laptop_path = "E:\\2019\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\config_1.html";
-    vis.draw(zjl_laptop_path);
+    string zjl_smart_path = "E:\\CodeCraft\\CodeCraft2019\\Deploy\\Visualization\\config_12.html";
+    vis.draw(zjl_smart_path);
+#endif // _WIN32
 
 	return 0;
 }

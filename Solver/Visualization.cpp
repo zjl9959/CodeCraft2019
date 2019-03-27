@@ -18,14 +18,8 @@ void Visualization::draw(std::string out_path) {
         << "</head>" << endl
         << "<html>"
         << "<body>" << endl;
-    add_css();
-    int time = 0;
-    for (auto it = slice->cbegin(); it != slice->cend(); ++it) {
-        draw_time_slice(time);
-        ++time;
-    }
     int font_size = 30;
-    ofs << "<div style='font-size:" << font_size*scale << "px;'>" << endl;
+    ofs << "<div style='font-size:" << font_size * scale << "px;'>" << endl;
     ofs << "<br><text>Current Time:</text>" << endl;
     ofs << "<text id='text_time'> 0 </text>" << endl;
     ofs << "<button onclick='prev()' style='font-size:"
@@ -33,6 +27,12 @@ void Visualization::draw(std::string out_path) {
     ofs << "<button onclick='next()' style='font-size:"
         << font_size * scale << "px;'>" << "->" << "</button>" << endl;
     ofs << "</div>" << endl;
+    add_css();
+    int time = 0;
+    for (auto it = slice->cbegin(); it != slice->cend(); ++it) {
+        draw_time_slice(time);
+        ++time;
+    }
     add_script();
     ofs << "</body>"
         << "</html>";
@@ -111,7 +111,7 @@ void Visualization::draw_road(ID id, Time time) {
             }
             */
             if (i == 0) {
-                int font_size = min(10, channel_width);
+                int font_size = 10;
                 if (rotate)                         // 绘制道路id
                     draw_Id(basic_x + (delt_x > 0 ? -font_size : font_size), basic_y + delt_y / 2, id, font_size, 0);
                 else
@@ -130,8 +130,8 @@ void Visualization::draw_road(ID id, Time time) {
     for (auto it = slice->at(time)[id].begin(); it != slice->at(time)[id].end(); ++it) {
         if (rotate) {
             Length pos = it->pos;
-            if (it->channel > channel)    // 说明车在反向车道上
-                pos = len - pos;
+            if (it->channel >= channel)    // 说明车在反向车道上
+                pos = len - pos + 1;
             draw_rectangle(               // 画车
                 basic_x + delt_x * it->channel,
                 basic_y + (pos - 1) * delt_y/len,
@@ -145,8 +145,8 @@ void Visualization::draw_road(ID id, Time time) {
                 (abs(delt_y) * 4) / (len * 5), 0);
         } else {
             Length pos = it->pos;
-            if (it->channel > channel)
-                pos = len - pos;
+            if (it->channel >= channel)
+                pos = len - pos + 1;
             draw_rectangle(
                 basic_x + (pos - 1)*delt_x / len,
                 basic_y + delt_y * it->channel,
@@ -210,6 +210,11 @@ void Visualization::add_script() {
     ofs << "<script>" << endl;
     // 定义变量，表示当前显示的时间片
     ofs << "var time=0;" << endl;
+    ofs << "document.onkeydown = function(e) {" << endl
+        << "if ((e || event).keyCode == 68)" << endl
+        << "    next();" << endl
+        << "if ((e || event).keyCode == 65)" << endl
+        << "    prev();}" << endl;
     // 定义prev函数
     ofs << "function prev() {" << endl
         << "    if(time==0)return;" << endl
