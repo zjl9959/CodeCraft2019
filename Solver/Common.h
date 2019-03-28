@@ -8,7 +8,10 @@
 namespace codecraft2019 {
 
 /*******定义基本的数据类型********/
+#ifndef _WIN32
 #define INT_MAX ((int)(~0U>>1))
+#endif
+
 #define INVALID_ID -1           // 无效的ID
 #define LENGTH_MAX INT_MAX
 #define MAX_TIME INT_MAX

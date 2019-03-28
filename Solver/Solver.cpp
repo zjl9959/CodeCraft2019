@@ -34,6 +34,13 @@ bool car_time_id_sort(const CarLocationOnRoad *carL1, const CarLocationOnRoad *c
 	return false;
 }
 
+// 查找id是否在路径中,如果在就返回true,否则返回false。
+bool id_in_path(const List<ID> &path, const ID id) {
+    for (List<ID>::const_iterator it = path.cbegin(); it != path.cend(); ++it) {
+        if (id == *it)return true;
+    }
+    return false;
+}
 
 void Solver::run() {
     init();
@@ -1270,8 +1277,53 @@ void Solver::get_routines_cost_time()
 	Log(FY_TEST) << max_cost_time << endl;
 }
 
-void Solver::AStar_search(Time start_time, Car * car)
+// 输入：车辆出发时间；车辆ID；最优路径的保存向量。
+// 输出：车辆在最优路径上的估计行驶时间。
+// 在给定的出发时间下，根据实际路况为单个车辆规划最优行驶路径。
+Time Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
 {
+    const int max_iter = INT_MAX;
+    const ID from = car->from->raw_cross->id;
+    const ID to = car->to->raw_cross->id;
+    int iter_num = 0;
+    double best_obj = 1000000.0;
+    List<ID> best_sol;
+    List<ID> cur_sol = { from };
+    multimap<double, List<ID>> pqueue;
+    pqueue.insert(make_pair(0, cur_sol));
+    while (!pqueue.empty() && iter_num < max_iter) {
+        double cur_obj = pqueue.begin()->first;
+        cur_sol.swap(pqueue.begin()->second);
+        pqueue.erase(pqueue.begin());
+        ID cur_cross = cur_sol.back();
+        if (Math::strongLess(best_obj, cur_obj +
+            min_time_cost(car->raw_car->id, cur_cross, to)))                    // 剪枝
+            continue;
+        for (int i = 0; i < 4; ++i) {                                           // 遍历四个路口
+            ID next_cross = ins_->raw_crosses[cur_cross].road[i];
+            if (next_cross != INVALID_ID && !id_in_path(cur_sol,next_cross)) {  // 下一个路口存在且不在路径中
+                ID road = topo.adjRoadID[cur_cross][next_cross];
+                if (road == INVALID_ID)continue;                                // 道路可能是单向的，这时ID就不存在了
+                Length road_length = ins_->raw_roads[road].length;
+                Speed max_speed = min(car->raw_car->speed, ins_->raw_roads[road].speed);
+                RoadCondition condition =
+                    time_road_condition[start_time + Math::dt5oi(cur_obj)][cur_cross][next_cross];  // 需要对condition的内容进行判断吗？
+                double next_obj = cur_obj + (double)road_length / ((double)max_speed*condition.avg_speed_ratio);
+                cur_sol.push_back(next_cross);
+                List<ID> next_sol(cur_sol);
+                cur_sol.pop_back();
+                if (next_cross == to && Math::strongLess(next_obj, best_obj)) { // 此时找到一个更好的完整的解
+                    best_obj = next_obj;
+                    best_sol = next_sol;
+                    continue;                                                   // 不用再扩展完整解
+                }
+                pqueue.insert(make_pair(next_obj, move(next_sol)));
+            }
+        }
+        ++iter_num;
+    }
+    roads = best_sol;
+    return Math::dt5oi(best_obj);
 }
 
 }
