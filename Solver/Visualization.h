@@ -24,7 +24,7 @@ struct Coord {
 
 class Visualization {
 public:
-    static constexpr double scale = 1.0;
+    static constexpr int scale = 1;
     static constexpr int width = 1300 * scale;
     static constexpr int height = 1000 * scale;
     static constexpr int cross_size = 50 * scale;
@@ -32,7 +32,7 @@ public:
     Visualization(const Instance *instance, const TimeSlice *time_slice) :
         ins(instance), slice(time_slice) {};
     void draw(std::string out_path);
-    ~Visualization() { ins = nullptr; };
+    ~Visualization() { ins = nullptr; slice = nullptr; };
 protected:
     void draw_time_slice(Time time);
     void draw_road(ID id, Time time);

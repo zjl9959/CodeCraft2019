@@ -727,7 +727,7 @@ public:
 
 class Math {
 public:
-    static constexpr double DefaultTolerance = 0.01;
+    static constexpr double DefaultTolerance = 0.00001;
 
     static bool weakEqual(double l, double r, double tolerance = DefaultTolerance) {
         return (std::abs(l - r) < tolerance);
@@ -741,6 +741,10 @@ public:
 
     static double floor(double d) { return std::floor(d + DefaultTolerance); }
     static long lfloor(double d) { return static_cast<long>(d + DefaultTolerance); }
+    static int dt5oi(double d) {     // Àƒ…·ŒÂ»Î
+        return static_cast<int>(std::floor(d)) +
+            (strongLess(d - std::floor(d), 0.50) ? 0 : 1);
+    }
 
     template<typename T>
     static bool isOdd(T integer) { return ((integer % 2) == 1); }
