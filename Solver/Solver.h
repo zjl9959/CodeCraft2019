@@ -23,6 +23,11 @@ struct RAux {
 	}
 	RAux() {}
 };
+struct PathInfo {
+	ID from;
+	ID to;
+	int num; // 数量
+};
 struct RoadCondition {
 	int vacancy_num;//空位数
 	double avg_speed_ratio; //道路上的车辆的实际行驶速度与最大速度的比值的平均值
@@ -36,6 +41,10 @@ public:
 		road_size = ins_->raw_roads.size();
 		double_road_size = road_size * 2;
 		cross_size = ins_->raw_crosses.size();
+		subPathInfo.resize(cross_size);
+		for (int i = 0; i < cross_size; ++i) {
+			subPathInfo[i].resize(cross_size);
+		}
 	};
     ~Solver() {
         ins_ = nullptr;
@@ -46,7 +55,7 @@ public:
     void run();
     void testIO();
     void init();
-	void init_solution();
+	void changePath();
 	void init_solution_once();
 	void init_solution_2();
     void binary_generate_solution();
@@ -85,7 +94,9 @@ private:
 	std::vector<RAux> rauxs;
     List<List<List<ID>>> shortest_paths; // 任意两点之间的最短路径
 	List<List<List<ID>>> shortest_cross_paths; // 任意两点间最短路径经过的路口
+	List<List<List<ID>>> other_paths;
 	List<List<List<RoadCondition>>> time_road_condition; //每个时间片的路况
+	List<List<List<ID>>> subPathInfo;//[道路跳数]
 	List<std::pair<ID,int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
 	List<ID> dead_lockCar;
 	void read_from_file();
@@ -97,6 +108,7 @@ private:
 	int cars_totalTime;
 	int latest_real_start_time;
 	int latest_start_time;
+	int randseed;
 };
 
 }

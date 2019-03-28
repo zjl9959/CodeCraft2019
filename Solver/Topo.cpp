@@ -102,6 +102,68 @@ void Topo::Floyd()
 	}
 }
 
+vector<ID> Topo::Dijkstra(ID src, ID dst,ID tabuRoad)
+{
+	vector<int> dist,dist2;
+	vector<ID> prev;
+	dist.resize(cross_size);
+	dist2.resize(cross_size);
+	prev.resize(cross_size);
+	dist[src] = 0;
+	clear(q);
+	for (int i = 0; i < cross_size; ++i) {
+		if (i != src) {
+			dist[i] = INT_MAX;
+			dist2[i] = INT_MAX;
+			prev[i] = INVALID_ID;
+		}
+	}
+	q.push(node(src, 0));
+	while (!q.empty())
+	{
+		node n = q.top();
+		q.pop();
+		ID v = n.id;
+		//if (dist2[v] < n.dist) continue;
+		if (dst == v) break;
+		for (int i = 0; i < crosses[v]->inCrossRoad.size(); ++i) {
+			Road *road = crosses[v]->inCrossRoad[i];
+			if (road->raw_road->id == tabuRoad) continue;
+			if (road->from_id != v) {
+				Log(FY_TEST) << "ID error\n";
+				exit(5);
+			}
+			ID u = road->to_id;
+			Length alt = n.dist + road->raw_road->length;
+			if (dist[u] > alt) {
+				swap(dist[u], alt);
+				q.push(node(u, dist[u]));
+				prev[u] = v;
+			}
+			/*if (dist2[u] >alt && dist[u] < alt) {
+				dist2[u] = alt;
+				q.push(node(u, dist2[u]));
+				
+			}*/
+		}
+	}
+	prev[src] = INVALID_ID;
+	//Log(FY_TEST) << dist[dst] << "  " << dist2[dst] << endl;
+	ID v = dst;
+	vector<ID> path;
+	while (prev[v]!= INVALID_ID)
+	{
+		path.push_back(adjRoadID[prev[v]][v]);
+		//Log(FY_TEST) << adjRoadID[prev[v]][v] << " ";
+		v = prev[v];
+	}
+	//Log(FY_TEST) << endl;
+	//Log(FY_TEST) << roads[prev[v]]->raw_road->id << endl;
+	reverse(path.begin(), path.end());
+	return path;
+
+}
+
 void Topo::printPath()
 {
 	cout << "各个顶点对的最短路径：" << endl;

@@ -6,6 +6,15 @@
 
 namespace codecraft2019 {
 
+struct node {
+	ID id;
+	Length dist;
+	node(ID id,Length dist):id(id), dist(dist){}
+	bool operator<(const node k)const
+	{
+		return dist > k.dist;
+	}
+};
 struct CarLocationOnRoad {
 	ID car_id;
 	STATE state;//车的状态
@@ -78,6 +87,7 @@ class Topo {
 public:
 	Topo(Instance *ins);
 	void Floyd();
+	std::vector<ID> Dijkstra(ID src, ID dst, ID tabuRoad = INVALID_ID);
 	void printPath();
 	void init_myTopo();
 	Turn getRoadTurn(ID cross_id, ID road1, ID road2);//获取cross的两条道路的转向
@@ -88,6 +98,7 @@ public:
 
 	Road ***adjRoad;
 
+	std::priority_queue<node> q;
 	ID **adjRoadID;//两个路口之间的道路ID（原始道路）
 	ID **pathID;//最短路经过的crossID
 	Length **sPathLen;//最短路长度
@@ -98,6 +109,11 @@ public:
 	std::vector<CarLocationOnRoad *> allCarLOnRoad;
 protected:
 	Instance *ins_;
+
+	void clear(std::priority_queue<node>& q) {
+		std::priority_queue<node> empty;
+		swap(empty, q);
+	}
 };
 }
 #endif // !CODE_CRAFT_2019_TOPO_H

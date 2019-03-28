@@ -62,8 +62,13 @@ void Solver::testIO() {
 void Solver::init() {
     // 保存两点之间的最短路径到shortest_paths
 	shortest_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size / 3);
+	other_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size / 3);
 	shortest_cross_paths.reserve(topo.cross_size*topo.cross_size*topo.cross_size/3);
+	randseed = (int)time(NULL);
+	srand(randseed);
+	Log(FY_TEST) << "the randseed is " << randseed << endl;
     shortest_paths.resize(topo.cross_size);
+	other_paths.resize(topo.cross_size);
 	shortest_cross_paths.resize(topo.cross_size);
 
     Log(Log::ZJL) << "\t------shortest path--------" << endl;
@@ -71,6 +76,8 @@ void Solver::init() {
     for (ID i = 0; i < topo.cross_size; ++i) {
         shortest_paths[i].resize(topo.cross_size);
 		shortest_cross_paths[i].resize(topo.cross_size);
+		other_paths[i].resize(topo.cross_size);
+
         for (ID j = 0; j < topo.cross_size; ++j) {
             //Log(Log::ZJL) << "from " << i << " to " << j << ":";
             if (topo.pathID[i][j] != INVALID_ID) {
@@ -90,57 +97,25 @@ void Solver::init() {
     // 其它数据的初始化。。。
 }
 
-void Solver::init_solution()
+void Solver::changePath()
 {
-	int car_size = ins_->raw_cars.size();
-	int cross_size = ins_->raw_crosses.size();
-	ID temp, next;
-	Time temp_time, latest_time = -1;
-	Speed speed = 0;
-	//vector<Car> notPlanCar;
-
-	for (auto i = 0; i < car_size; ++i) {
-		Routine routine;
-		RawCar *raw_car = &ins_->raw_cars[i];
-		routine.car_id = raw_car->id;
-		routine.start_time = raw_car->plan_time; //xxf:先将routine的出发时间记录为车的原始出发时间
-		if (raw_car->plan_time > latest_time) latest_time = raw_car->plan_time;
-		temp = raw_car->from;
-		while (temp != raw_car->to)
-		{
-			next = topo.pathID[temp][raw_car->to];
-			routine.roads.push_back(topo.adjRoadID[temp][next]);
-			temp = next;
+	
+	for (int i = 0; i < output_->routines.size(); ++i) {
+		Routine *routine = &output_->routines[i];
+		for (int j = 0; j < routine->crosses.size(); ++j) {
+			for (int k = j+1; k < routine->crosses.size(); ++k) {
+				subPathInfo[routine->crosses[j]][routine->crosses[k]].push_back(i);
+			}
 		}
-
-		temp_time = 0;
-		for (auto j = 0; j < routine.roads.size(); ++j) {
-			RawRoad road = ins_->raw_roads[routine.roads[j]];
-			speed = min(road.speed, raw_car->speed);
-			temp_time += road.length / speed;
-		}//计算没有拥堵时的耗时
-		InterRoutine *interR = new InterRoutine(topo.cars[i], temp_time);
-		//routine.cost_time = temp_time;     //xxf:记录每辆车路径的临时消耗时间
-		output_->routines.push_back(move(routine));//使用最短路，此时routine的出发时间还未确定
-		output_->routines[i].cost_time = temp_time;
-		aux.car_same[raw_car->from][raw_car->to][raw_car->plan_time].push_back(interR);
 	}
-
-
-	/**接下来调整车辆的实际出发时间*/
-	vector<Routine *> *time_car;             //xxf:将出发时间相同的车的routine 放入一个vector
-	time_car = new vector<Routine *>[latest_time + 1];
-	for (int i = 0; i < car_size; ++i) {
-		Time start_time = ins_->raw_cars[i].plan_time;
-		time_car[start_time].push_back(&output_->routines[i]);
+	for (int i = 0; i < cross_size; ++i) {
+		for (int j = 0; j < cross_size; ++j) {
+			if (subPathInfo[i][j].size() > 500) {//说明需要更换路径，该参数可调
+				
+			}
+		}
 	}
-	
-	
-
-	Time time = check_solution(output_->routines, aux);
-	std::cout << "the cost time is" << time << std::endl;
 }
-
 
 // 构造初始解版本二
 void Solver::binary_generate_solution() {
@@ -152,9 +127,11 @@ void Solver::binary_generate_solution() {
     for (int i = 0; i < total_car_num; ++i) {   // 每辆车都走最短路径
         Routine routine;
         routine.car_id = ins_->raw_cars[i].id;
-        routine.roads = shortest_paths[ins_->raw_cars[i].from][ins_->raw_cars[i].to];
+		ID from = ins_->raw_cars[i].from, to = ins_->raw_cars[i].to;
+		routine.roads = shortest_paths[from][to];
         output_->routines.push_back(move(routine));
     }
+	
     vector<Time> best_start_times;              // 最优的车辆出发时间
     best_start_times.reserve(total_car_num);
     Time best_schdeule_time = MAX_TIME;
@@ -196,7 +173,7 @@ void Solver::binary_generate_solution() {
 		output_->routines[i].start_time = best_start_times[i];
 	}
 	
-	//car_num_mid = 28;
+	//car_num_mid = 40;
 	//Time current_time = changeTime(total_car_num, car_num_mid, run_time, start_times);
 	generate_futher_solution();
 	get_routines_cost_time();
@@ -234,7 +211,7 @@ void Solver::generate_futher_solution()
 			break;
 		}
 	}
-	Time gap = temp_t - time +5;
+	Time gap = temp_t - time +10;
 	for (int i = 0; i < output_->routines.size(); ++i) {
 		Time start_time = output_->routines[i].start_time;
 		if (start_time > 1)
@@ -277,13 +254,17 @@ void Solver::local_search()
 		for (int k = 0; k < K; ++k) {//对车辆进行近似评估
 			ID car_id = time_diff[k].first;
 			Time start_time = output_->routines[car_id].start_time;
-			output_->routines[car_id].start_time = -1;
-			aux.real_car_num = car_size - c-1;
 			Car *car = topo.cars[car_id];
 			for (int i = 0; i < car->from->inCrossRoad.size(); ++i) {
 				Road *road = car->from->inCrossRoad[i];
-				if (road->raw_road->id == output_->routines[car_id].roads[0] ) continue;
-				if (time_road_condition[start_time][road->from_id][road->to_id].vacancy_num > road->vacancy_thresh) {
+				ID old_id = output_->routines[car_id].roads[0];
+				if (road->raw_road->id == old_id ) continue;
+
+				output_->routines[car_id].roads.clear();
+
+				output_->routines[car_id].roads = topo.Dijkstra(car->raw_car->from, car->raw_car->to, old_id);
+				break;
+				/*if (time_road_condition[start_time][road->from_id][road->to_id].vacancy_num > road->vacancy_thresh) {
 					if (shortest_paths[road->to_id][car->raw_car->to].size() > 0) {
 						output_->routines[car_id].crosses.clear();
 						Log(FY_TEST) << "car_id " << car_id << " the old is: " << k << endl;
@@ -292,11 +273,8 @@ void Solver::local_search()
 						}
 						Log(FY_TEST) << endl;
 						output_->routines[car_id].roads.clear();
+						
 
-						output_->routines[car_id].roads.push_back(road->raw_road->id);
-						for (int j = 0; j < shortest_paths[road->to_id][car->raw_car->to].size(); ++j) {
-							output_->routines[car_id].roads.push_back(shortest_paths[road->to_id][car->raw_car->to][j]);
-						}
 						Log(FY_TEST) << "the new is: " << endl;
 
 						for (int r = 0; r < output_->routines[car_id].roads.size(); ++r) {
@@ -307,12 +285,7 @@ void Solver::local_search()
 						break;
 					}
 
-				}
-			}
-		}
-		for (int i = 0; i < car_size; ++i) {
-			if (i == 307) {
-				output_->routines[i].printRoads();
+				}*/
 			}
 		}
 		Time new_time = check_solution(output_->routines, aux);
