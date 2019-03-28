@@ -66,6 +66,7 @@ public:
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux);
 	void get_routines_cost_time();
+    void test_treeSearch();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
