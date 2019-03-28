@@ -154,40 +154,41 @@ void Solver::binary_generate_solution() {
 	vector<Time> start_times;
 	int cnt = 0;
 	clock_t a = clock();
-    while (car_num_left <= car_num_right) {      // 二分调参大法
-        Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
-		car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
-		Time current_time = changeTime(total_car_num, car_num_mid, run_time,start_times);
-		aux.real_car_num = output_->routines.size();
-		cnt++;
-        Time cur_schedule_time = check_solution(output_->routines,aux);
-		Log(Log::ZJL) << car_num_mid << endl;
-        Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
-        if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
-            car_num_left = car_num_mid + 1;
-            if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
-                best_schdeule_time = cur_schedule_time;
-                best_start_times = start_times;
-            }
-        } else {
-            car_num_right = car_num_mid - 1;
-        }
-    }
-	clock_t b = clock();
-	double dur = (b - a)*1.0 / CLOCKS_PER_SEC;
-	cout << "times : " << cnt << "  " << dur<<endl;
-	for (int i = 0; i < best_start_times.size(); ++i) {
-		output_->routines[i].start_time = best_start_times[i];
-	}
+ //   while (car_num_left <= car_num_right) {      // 二分调参大法
+ //       Log(Log::ZJL) << "\t-----binary search turn " << binsearch_turn << "------" << endl;
+	//	car_num_mid = car_num_left + ((car_num_right - car_num_left) / 2);
+	//	Time current_time = changeTime(total_car_num, car_num_mid, run_time,start_times);
+	//	aux.real_car_num = output_->routines.size();
+	//	cnt++;
+ //       Time cur_schedule_time = check_solution(output_->routines,aux);
+	//	Log(Log::ZJL) << car_num_mid << endl;
+ //       Log(Log::ZJL) << "current time:" << current_time << " schedule time:" << cur_schedule_time << endl;
+ //       if (cur_schedule_time != -1) {                 // 解是合法的，说明可以提高car_num_mid
+ //           car_num_left = car_num_mid + 1;
+ //           if (cur_schedule_time < best_schdeule_time) {  // 记录最优解，这里check_solution能否传回准确的调度时间？
+ //               best_schdeule_time = cur_schedule_time;
+ //               best_start_times = start_times;
+ //           }
+ //       } else {
+ //           car_num_right = car_num_mid - 1;
+ //       }
+ //   }
+	//clock_t b = clock();
+	//double dur = (b - a)*1.0 / CLOCKS_PER_SEC;
+	//cout << "times : " << cnt << "  " << dur<<endl;
+	//for (int i = 0; i < best_start_times.size(); ++i) {
+	//	output_->routines[i].start_time = best_start_times[i];
+	//}
 	
-	//car_num_mid = 40;
-	//Time current_time = changeTime(total_car_num, car_num_mid, run_time, start_times);
+	car_num_mid = 32;
+	Time current_time = changeTime(total_car_num, car_num_mid, run_time, start_times);
 	generate_futher_solution();
 	get_routines_cost_time();
 	//aux.real_car_num = car_size;
 	//check_solution(output_->routines, aux);
+	
+	handle_deadLock();
 	local_search();
-	//handle_deadLock();
 	cout << "the latest time is" << latest_real_start_time <<" start time"<< latest_start_time<< endl;
 }
 
@@ -231,23 +232,31 @@ void Solver::generate_futher_solution()
 
 void Solver::handle_deadLock()
 {
-	vector<Routine> deadLock_routines;
+	/*vector<Routine> deadLock_routines;
 	for (int i = 0; i < output_->routines.size(); ++i) {
 		deadLock_routines.push_back(output_->routines[i]);
-	}
+	}*/
 	dead_lockCar.clear();
+	clock_t a = clock();
 	aux.real_car_num = output_->routines.size();
-	Time time = check_solution(deadLock_routines, aux);
+	Time time = check_solution(output_->routines, aux);
 	while(time == -1) {
 		for (int i = 0; i < dead_lockCar.size(); ++i) {
-			deadLock_routines[dead_lockCar[i]].start_time = -1;
+			ID old_id ,car_id = dead_lockCar[i].first;
+			output_->routines[car_id].roads.clear();
+			Car *car = topo.cars[car_id];
+			output_->routines[car_id].roads = topo.Dijkstra(car->raw_car->from, car->raw_car->to, dead_lockCar[i].second);
+			//priority_first_search(deadLock_routines[dead_lockCar[i]].start_time, topo.cars[dead_lockCar[i]], deadLock_routines[dead_lockCar[i]].roads);
 		}
-		aux.real_car_num = output_->routines.size() - dead_lockCar.size();
-		time = check_solution(deadLock_routines, aux);
-		Log(Log::ZJL) << time << endl;
+
+		time = check_solution(output_->routines, aux);
+		//Log(Log::ZJL) << time << endl;
 
 	}
-	cout << dead_lockCar.size() << endl;
+	clock_t b = clock();
+	double dur = (b - a)*1.0 / CLOCKS_PER_SEC;
+	cout << "run time is" << dur << endl;
+	cout << time << endl;
 }
 
 void Solver::local_search()
@@ -255,7 +264,7 @@ void Solver::local_search()
 	aux.real_car_num = car_size;
 	Time current_time = check_solution(output_->routines, aux);
 	vector<Routine> temp_routines;
-	for (int c = 0; c < 100; c++) {
+	for (int c = 0; c < 200; c++) {
 		int K = 1;//要评估的车辆个数
 		partial_sort(time_diff.begin(), time_diff.begin() + K, time_diff.end(), time_diff_sort);
 		for (int k = 0; k < K; ++k) {//对车辆进行近似评估
@@ -296,9 +305,25 @@ void Solver::local_search()
 			}
 		}
 		Time new_time = check_solution(output_->routines, aux);
-		Log(FY_TEST) << "the new time is :" << new_time << endl;
+		if (new_time == -1) {
+			handle_deadLock();
+		}
+		else if (new_time < current_time) {
+			temp_routines.clear();
+			for (int i = 0; i < output_->routines.size(); ++i) {
+				temp_routines.push_back(output_->routines[i]);
+			}
+			Log(FY_TEST) << "the new time is :" << new_time << endl;
+			current_time = new_time;
+		}
+			
 	}
-	
+	output_->routines.clear();
+	for (int i = 0; i < temp_routines.size(); ++i) {
+		output_->routines.push_back(temp_routines[i]);
+	}
+	Time new_time = check_solution(output_->routines, aux);
+	Log(FY_TEST) << "the end time is :" << new_time << endl;
 }
 
 Time Solver::changeTime(int total_car_num,int car_num_mid, vector<pair<Time, ID>> &run_time, vector<Time> &start_times)
@@ -467,7 +492,7 @@ int Solver::check_solution(const vector<Routine> &routines,Aux &aux)
 			for (int k = 0; k < cross->road.size(); ++k) {
 				Road *road = cross->road[k];
 				if (road->waitOutCarL.size() > 0) {
-					dead_lockCar.push_back(road->waitOutCarL[0]->car_id);
+					dead_lockCar.push_back(make_pair(road->waitOutCarL[0]->car_id,road->raw_road->id));
 					isvalid = false;
 				}
 			}

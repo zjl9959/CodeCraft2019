@@ -4,12 +4,12 @@
 
 #ifdef _WIN32
 #include "Visualization.h"
+#include <io.h>
 #endif // _WIN32
 
 
 using namespace std;
 using namespace codecraft2019;
-
 int main(int argc, char *argv[])
 {
     std::cout << "Begin" << std::endl;

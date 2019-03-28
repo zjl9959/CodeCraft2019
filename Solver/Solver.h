@@ -98,7 +98,7 @@ private:
 	List<List<List<RoadCondition>>> time_road_condition; //每个时间片的路况
 	List<List<List<ID>>> subPathInfo;//[道路跳数]
 	List<std::pair<ID,int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
-	List<ID> dead_lockCar;
+	List<std::pair<ID,ID>> dead_lockCar; // car_id, road_id
 	void read_from_file();
 	int car_size ;
 	int road_size ;
