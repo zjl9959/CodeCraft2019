@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		int end = min((int)solver.timeslice.size() - t-1, 49);
 		TimeSlice temp_slice(solver.timeslice.begin()+t, solver.timeslice.begin() + t+ end);
 		Visualization vis(&ins, &temp_slice);
-		vis.draw(zjl_laptop_path +to_string(t)+"-"+ to_string(t+end)+".html");
+		vis.draw(fangyuan_path +to_string(t)+"-"+ to_string(t+end)+".html");
 		t += end+1;
 	}
 #endif // _WIN32

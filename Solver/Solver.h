@@ -60,11 +60,11 @@ public:
 	void init_solution_2();
     void binary_generate_solution();
 	void generate_futher_solution();
-	void handle_deadLock();
+	Time handle_deadLock();
 	void local_search();
 	Time priority_first_search(Time start_time, Car *car, List<ID> &roads);
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
-	int check_solution(const std::vector<Routine> &routines, Aux &aux);
+	int check_solution(const std::vector<Routine> &routines, Aux &aux,Mode mode = CheckAll);
 	void get_routines_cost_time();
 
 	/* 调度相关 */
@@ -83,6 +83,7 @@ private:
 	std::vector<CarLocationOnRoad *> carL_inDst;//保存到达终点的carL指针
 protected:
     Instance* ins_;
+	Time current_time;
 	int t;
 	Time total_time;
     Output* output_;
@@ -98,6 +99,7 @@ private:
 	List<List<List<RoadCondition>>> time_road_condition; //每个时间片的路况
 	List<List<List<ID>>> subPathInfo;//[道路跳数]
 	List<std::pair<ID,int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
+	List<std::pair<ID, ID>> zero_speed_car; //
 	List<std::pair<ID,ID>> dead_lockCar; // car_id, road_id
 	void read_from_file();
 	int car_size ;
