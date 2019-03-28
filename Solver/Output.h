@@ -6,7 +6,7 @@
  * 将结果保存到指定路径的文件中。
  */
 #include "Instance.h"
-
+#include<alg.h>
 namespace codecraft2019 {
 
 struct Routine {
@@ -49,6 +49,16 @@ struct Routine {
 			Log(FY_TEST) << " " << roads[i];
 		}
 		Log(FY_TEST) << "\n";
+	}
+	Time get_time(Instance *ins_) {
+		double approxi_time = 0;
+		for (int j = 0; j < roads.size(); ++j) {
+			RawRoad *raw_road = &ins_->raw_roads[roads[j]];
+			Speed speed = min(ins_->raw_cars[car_id].speed, raw_road->speed);
+			approxi_time += (raw_road->speed * 1.0) / speed;
+		}
+		cost_time = ceil(approxi_time);
+		return cost_time;
 	}
 };
 

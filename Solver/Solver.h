@@ -55,7 +55,6 @@ public:
     void run();
     void testIO();
     void init();
-	void changePath();
 	void init_solution_once();
 	void init_solution_2();
     void binary_generate_solution();
@@ -66,6 +65,7 @@ public:
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux,Mode mode = CheckAll);
 	void get_routines_cost_time();
+    void test_treeSearch();
 
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
@@ -98,7 +98,8 @@ private:
 	List<List<List<ID>>> other_paths;
 	List<List<List<RoadCondition>>> time_road_condition; //每个时间片的路况
 	List<List<List<ID>>> subPathInfo;//[道路跳数]
-	List<std::pair<ID,int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
+	List<std::pair<ID, int>> time_diff; //每辆车的实际出发时间与计划时间的时间差
+	List<std::pair<ID,int>> cars_cost_time; //每辆车的消耗时间
 	List<std::pair<ID, ID>> zero_speed_car; //
 	List<std::pair<ID,ID>> dead_lockCar; // car_id, road_id
 	void read_from_file();

@@ -46,6 +46,7 @@ void Solver::run() {
     init();
 	//init_solution();
     binary_generate_solution();
+    //test_treeSearch();
 	//init_solution_2();
 	/*init_solution_once();
 	if (check_solution(output_->routines,aux) == -1) {
@@ -104,25 +105,6 @@ void Solver::init() {
     // 其它数据的初始化。。。
 }
 
-void Solver::changePath()
-{
-	
-	for (int i = 0; i < output_->routines.size(); ++i) {
-		Routine *routine = &output_->routines[i];
-		for (int j = 0; j < routine->crosses.size(); ++j) {
-			for (int k = j+1; k < routine->crosses.size(); ++k) {
-				subPathInfo[routine->crosses[j]][routine->crosses[k]].push_back(i);
-			}
-		}
-	}
-	for (int i = 0; i < cross_size; ++i) {
-		for (int j = 0; j < cross_size; ++j) {
-			if (subPathInfo[i][j].size() > 500) {//说明需要更换路径，该参数可调
-				
-			}
-		}
-	}
-}
 
 // 构造初始解版本二
 void Solver::binary_generate_solution() {
@@ -270,6 +252,7 @@ void Solver::local_search()
 	for (int i = 0; i < output_->routines.size(); ++i) {
 		temp_routines.push_back(output_->routines[i]);
 	}
+	
 	Time new_time;
 	current_time = INT_MAX;
 	for (int m = 0; m < 100; ++m) {
@@ -280,9 +263,16 @@ void Solver::local_search()
 				//Log(FY_TEST) << "--------------------------------\n";
 				//output_->routines[car_id].printRoads();
 
-				output_->routines[car_id].roads.clear();
 				Car *car = topo.cars[car_id];
-				output_->routines[car_id].roads = topo.Dijkstra(car->raw_car->from, car->raw_car->to, zero_speed_car[i].second);
+				vector<ID> roads;
+				if (output_->routines[car_id].start_time > 400)
+					output_->routines[car_id].start_time = output_->routines[car_id].start_time - rand() % 50 - 20;
+				
+				if (priority_first_search(output_->routines[car_id].start_time, car, roads) != -1) {
+					output_->routines[car_id].roads.clear();
+					output_->routines[car_id].roads = roads;
+				}
+				//output_->routines[car_id].roads = topo.Dijkstra(car->raw_car->from, car->raw_car->to, zero_speed_car[i].second);
 				//output_->routines[car_id].printRoads();
 			}
 			new_time = check_solution(output_->routines, aux, GetZeroSpeed);
@@ -416,6 +406,7 @@ int Solver::check_solution(const vector<Routine> &routines,Aux &aux, Mode mode)
     timeslice.clear();
 	time_road_condition.clear();
 	time_diff.clear();
+	cars_cost_time.clear();
 	if(mode == GetZeroSpeed)
 		zero_speed_car.clear();
 	for (int i = 0; i < routines.size(); ++i) {
@@ -426,6 +417,7 @@ int Solver::check_solution(const vector<Routine> &routines,Aux &aux, Mode mode)
 	inDst_num = 0;
 	cars_totalTime = 0;
 	time_diff.resize(car_size);
+	cars_cost_time.resize(car_size);
 	/*aux.roadNullNumOfTime.clear();
 	aux.type_numTime.clear();
 	aux.type_numTime.resize(2000);
@@ -968,7 +960,8 @@ bool Solver::moveToNextRoad(Road * road, Road * next_road, CarLocationOnRoad * c
 			inDst_num++;
 			carL_inDst.push_back(carL);
 			//cout << t << endl;
-			/*cars_totalTime += t - output_->routines[carL->car_id].start_time;*/
+			cars_totalTime += t - output_->routines[carL->car_id].start_time;
+			cars_cost_time.push_back(make_pair(carL->car_id,t - output_->routines[carL->car_id].start_time));
 		}
 		else {
 			cout << "out error";
@@ -1066,10 +1059,6 @@ Time Solver::min_time_cost(const ID car, const ID from, const ID to) const {
     return time_cost;
 }
 
-void Solver::read_from_file()
-{
-
-}
 
 
 void Solver::init_solution_once() {
@@ -1354,17 +1343,36 @@ void Solver::get_routines_cost_time()
 	Time max_cost_time =-1;
 	for (int i = 0; i < output_->routines.size(); ++i) {
 		Routine *routine = &output_->routines[i];
-		double approxi_time = 0;
-		for (int j = 0; j < routine->roads.size(); ++j) {
-			RawRoad *raw_road = &ins_->raw_roads[routine->roads[j]];
-			Speed speed = min(ins_->raw_cars[routine->car_id].speed, raw_road->speed);
-			approxi_time += (raw_road->speed * 1.0) / speed;
-		}
-		routine->cost_time = ceil(approxi_time);
+		routine->get_time(ins_);
 		if (max_cost_time < routine->cost_time)
 			max_cost_time = routine->cost_time;
 	}
 	Log(FY_TEST) << max_cost_time << endl;
+}
+
+void Solver::test_treeSearch() {
+    bool log_out = true;
+    ID car = 1;
+    aux.real_car_num = car_size;
+    Time time = check_solution(output_->routines, aux);
+    int count = 0;
+    clock_t start = clock();
+    for (; car < car_size; ++car) {
+        Log(log_out) << "car:" << car << endl;
+        Time lb = min_time_cost(car, ins_->raw_cars[car].from, ins_->raw_cars[car].to);
+        Log(log_out) << "time low bound:" << lb << endl;
+        List<ID> path;
+        Time t = priority_first_search(output_->routines[car].start_time, topo.cars[car], path);
+        Log(log_out) << "time:" << t << endl;;
+        for (auto it = path.begin(); it != path.end(); ++it) {
+            Log(log_out) << *it << " ";
+        }
+        if (t == -1)
+            count++;
+    }
+    cout << "total num:" << car_size << endl;
+    cout << "failed num:" << count << endl;
+    cout << "used time:" << clock() - start << endl;
 }
 
 // 输入：车辆出发时间；车辆ID；最优路径的保存向量。
@@ -1373,6 +1381,7 @@ void Solver::get_routines_cost_time()
 Time Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
 {
     const int max_iter = INT_MAX;
+    const int time_slice_num = time_road_condition.size();
     const ID from = car->from->raw_cross->id;
     const ID to = car->to->raw_cross->id;
     int iter_num = 0;
@@ -1387,18 +1396,27 @@ Time Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
         pqueue.erase(pqueue.begin());
         ID cur_cross = cur_sol.back();
         if (Math::strongLess(best_obj, cur_obj +
-            min_time_cost(car->raw_car->id, cur_cross, to)))                    // 剪枝
+            min_time_cost(car->raw_car->id, cur_cross, to))) {                    // 剪枝
             continue;
-        for (int i = 0; i < 4; ++i) {                                           // 遍历四个路口
-            ID next_cross = ins_->raw_crosses[cur_cross].road[i];
-            if (next_cross != INVALID_ID && !id_in_path(cur_sol,next_cross)) {  // 下一个路口存在且不在路径中
-                ID road = topo.adjRoadID[cur_cross][next_cross];
-                if (road == INVALID_ID)continue;                                // 道路可能是单向的，这时ID就不存在了
+        }
+        for (auto it = topo.crosses[cur_cross]->inCrossRoad.begin();
+            it != topo.crosses[cur_cross]->inCrossRoad.end(); ++it) {
+            ID next_cross = (*it)->to_id;
+            if (!id_in_path(cur_sol,next_cross)) {                              // 下一个路口不在路径中
+                ID road = (*it)->raw_road->id;
                 Length road_length = ins_->raw_roads[road].length;
                 Speed max_speed = min(car->raw_car->speed, ins_->raw_roads[road].speed);
-                RoadCondition condition =
-                    time_road_condition[start_time + Math::dt5oi(cur_obj)][cur_cross][next_cross];  // 需要对condition的内容进行判断吗？
-                double next_obj = cur_obj + (double)road_length / ((double)max_speed*condition.avg_speed_ratio);
+                Time time_point = start_time + Math::dt5oi(cur_obj);
+                if (time_point >= time_slice_num)continue;
+                RoadCondition condition(time_road_condition[time_point][cur_cross][next_cross]);
+                if (Math::weakEqual(condition.avg_speed_ratio, 0.0)) {
+                    continue;
+                }
+                double road_speed_time =
+                    (double)road_length / ((double)max_speed*condition.avg_speed_ratio);
+                if (road_speed_time < 0)
+                    continue;
+                double next_obj = cur_obj + road_speed_time;
                 cur_sol.push_back(next_cross);
                 List<ID> next_sol(cur_sol);
                 cur_sol.pop_back();
@@ -1412,7 +1430,11 @@ Time Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
         }
         ++iter_num;
     }
-    roads = best_sol;
+    if (best_sol.empty() || best_sol.back() != to)
+        return -1;
+	for (int i = 0; i < best_sol.size()-1; ++i) {
+		roads.push_back(topo.adjRoadID[best_sol[i]][best_sol[i + 1]]);
+	}
     return Math::dt5oi(best_obj);
 }
 
