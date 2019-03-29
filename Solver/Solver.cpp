@@ -356,9 +356,8 @@ void Solver::local_search()
 	//}
 	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time,30,350);
 	find_newPath_and_time(temp_routines, time_diff, Latest_Time,30,350);
-	start_early(temp_routines, 30, 2);
-	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 300);
-	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 300);
+	start_early(temp_routines, 30, 0);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
 	/*start_early(temp_routines, 30, 20);
 	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 500);*/
 
@@ -371,7 +370,7 @@ void Solver::local_search()
 		}
 	}
 	new_time = check_solution(output_->routines, aux);
-	Log(FY_TEST) << "the end time is :" << new_time <<" \n the too late car_num is "<<cnt<< endl;
+	cout << "the end time is :" << new_time <<" \n the too late car_num is "<<cnt<< endl;
 }
 void Solver::find_newPath_and_time(vector<Routine> &temp_routines, List<std::pair<ID, int>> &neighbour, Neighbour neigh,int K, Time my_min,Time my_max)
 {
