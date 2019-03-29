@@ -68,6 +68,7 @@ public:
 	int check_solution(const std::vector<Routine> &routines, Aux &aux,Mode mode = CheckAll);
 	void get_routines_cost_time();
     void test_treeSearch();
+    void smooth_road_condition();
 	
 	Time find_best_start_time(Car *car, Routine &routine, std::vector<ID> &best_roads);
 	/* 调度相关 */

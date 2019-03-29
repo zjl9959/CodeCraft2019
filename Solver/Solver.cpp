@@ -1447,6 +1447,33 @@ void Solver::test_treeSearch() {
     cout << "used time:" << clock() - start << endl;
 }
 
+// 在光滑的路面上摩擦摩擦。
+void Solver::smooth_road_condition() {
+    static const List<double> smooth_factor = { 0.10,0.20,0.40,0.20,0.10 };
+    const int slip = smooth_factor.size() / 2;
+    List<double> record;
+    if (time_road_condition.size() < smooth_factor.size())
+        return;
+    for (int c1 = 0; c1 < topo.cross_size; ++c1) {
+        for (int c2 = 0; c2 < topo.cross_size; ++c2) {
+            record.clear();
+            for (int r = 0; r < smooth_factor.size(); ++r)
+                record.push_back(time_road_condition[r][c1][c2].avg_speed_ratio);
+            for (int i = slip; i < time_road_condition.size() - slip; ++i) {
+                double temp = 0.0;
+                for (int j = 0; j < smooth_factor.size(); ++j) {
+                    temp += record[j] * smooth_factor[j];
+                }
+                record.erase(record.begin());
+                if (i + slip + 1 < time_road_condition.size()) {
+                    record.push_back(time_road_condition[i + slip + 1][c1][c2].avg_speed_ratio);
+                }
+                time_road_condition[i][c1][c2].avg_speed_ratio = temp;
+            }
+        }
+    }
+}
+
 // 输入：车辆出发时间；车辆ID；最优路径的保存向量。
 // 输出：车辆在最优路径上的估计行驶时间。
 // 在给定的出发时间下，根据实际路况为单个车辆规划最优行驶路径。
