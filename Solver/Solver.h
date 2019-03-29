@@ -60,13 +60,16 @@ public:
     void binary_generate_solution();
 	void generate_futher_solution();
 	Time handle_deadLock();
+	void start_early(List<Routine> &temp_routines, int d1, int d2);
 	void local_search();
+	void find_newPath_and_time(std::vector<Routine> &temp_routines, List<std::pair<ID, int>> &neighbour,Neighbour neigh,int K=10, Time my_min=350, Time my_max=INT_MAX);
 	Time priority_first_search(Time start_time, Car *car, List<ID> &roads);
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux,Mode mode = CheckAll);
 	void get_routines_cost_time();
     void test_treeSearch();
-
+	
+	Time find_best_start_time(Car *car, Routine &routine, std::vector<ID> &best_roads);
 	/* 调度相关 */
 	void driveAllCarJustOnRoadToEndState(Road *road);
 	void driveCarOnChannelToEndState(Road *road, int ch);
