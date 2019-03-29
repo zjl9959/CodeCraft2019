@@ -282,7 +282,7 @@ void Solver::start_early(List<Routine> &temp_routines,int d1,int d2)
 		for (int i = 0; i < output_->routines.size(); ++i) {
 			Routine *routine = &output_->routines[i];
 			if (routine->start_time <= 60) {
-				routine->start_time = max(ins_->raw_cars[i].plan_time, routine->start_time - rand() % 60);
+				routine->start_time = max(ins_->raw_cars[i].plan_time, routine->start_time -  60);
 			}
 			if (routine->start_time > 60 && routine->start_time < 100)
 			{
@@ -305,6 +305,44 @@ void Solver::start_early(List<Routine> &temp_routines,int d1,int d2)
 		}
 		Log(FY_TEST) << "the new time is :" << new_time << endl;
 		current_time = new_time;
+	}
+}
+
+void Solver::insert_to_early(List<Routine> &temp_routines)
+{
+	Time new_time;
+	int K = 10;
+	Log(FY_TEST) << "insert_to_early" << endl;
+	for (int m = 0; m < 10; ++m) {
+		partial_sort(time_diff.begin(), time_diff.begin() + K, time_diff.end(), time_diff_sort);
+
+		for (int k = 0; k < K; ++k) {//对车辆进行近似评估
+			ID car_id = time_diff[k].first;
+			Time start_time = output_->routines[car_id].start_time;
+			Car *car = topo.cars[car_id];
+			vector<ID> roads;
+			if(output_->routines[car_id].start_time>150)
+				output_->routines[car_id].start_time = output_->routines[car_id].start_time - rand() % 150 + 10;
+
+			if (priority_first_search(output_->routines[car_id].start_time, car, roads) != -1) {
+				output_->routines[car_id].roads.clear();
+				output_->routines[car_id].roads = roads;
+				output_->routines[car_id].cost_time = get_time(ins_, roads, car_id);
+
+			}
+		}
+		new_time = check_solution(output_->routines, aux);
+		if (new_time == -1) {
+			new_time = handle_deadLock();
+		}
+		if (new_time < current_time) {
+			temp_routines.clear();
+			for (int i = 0; i < output_->routines.size(); ++i) {
+				temp_routines.push_back(output_->routines[i]);
+			}
+			Log(FY_TEST) << "the new time is :" << new_time << endl;
+			current_time = new_time;
+		}
 	}
 }
 
@@ -354,12 +392,26 @@ void Solver::local_search()
 	//		current_time = new_time;
 	//	}
 	//}
-	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time,30,350);
-	find_newPath_and_time(temp_routines, time_diff, Latest_Time,30,350);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 350);
+	find_newPath_and_time(temp_routines, time_diff, Latest_Time, 30, 350);
 	start_early(temp_routines, 30, 0);
 	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
-	/*start_early(temp_routines, 30, 20);
-	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 500);*/
+	start_early(temp_routines, 30, 1);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
+	start_early(temp_routines, 30, 10);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
+	find_newPath_and_time(temp_routines, time_diff, Cost_time, 30, 320);
+	/*insert_to_early(temp_routines);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
+	insert_to_early(temp_routines);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 20, 350);*/
+
+	start_early(temp_routines, 30, 40);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 500);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 500);
+	find_newPath_and_time(temp_routines, cars_cost_time, Cost_time, 30, 500);
 
 	output_->routines.clear();
 	int cnt = 0;
