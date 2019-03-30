@@ -63,7 +63,7 @@ public:
 	void start_early(List<Routine> &temp_routines, int d1, int d2);
 	void insert_to_early(List<Routine>& temp_routines);
 	void local_search();
-	void find_newPath_and_time(std::vector<Routine> &temp_routines, List<std::pair<ID, int>> &neighbour,Neighbour neigh,int K=10, Time my_min=350, Time my_max=INT_MAX);
+	void find_newPath_and_time(std::vector<Routine> &temp_routines, List<std::pair<ID, int>> &neighbour,Neighbour neigh,int K=50, Time my_min=2000, Time my_max=INT_MAX);
 	Time priority_first_search(Time start_time, Car *car, List<ID> &roads);
 	Time changeTime(int total_car_num, int car_num_mid, std::vector<std::pair<Time, ID>> &run_time, std::vector<Time> &start_times);
 	int check_solution(const std::vector<Routine> &routines, Aux &aux,Mode mode = CheckAll);
