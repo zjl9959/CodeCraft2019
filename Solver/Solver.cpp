@@ -54,6 +54,7 @@ void Solver::run() {
     init();
 	//init_solution();
     binary_generate_solution();
+    //smooth_road_condition();
     //test_treeSearch();
 	//init_solution_2();
 	/*init_solution_once();
@@ -384,7 +385,7 @@ void Solver::local_search()
 void Solver::find_newPath_and_time(vector<Routine> &temp_routines, List<std::pair<ID, int>> &neighbour, Neighbour neigh,int K, Time my_min,Time my_max)
 {
 	Time new_time;
-	for (int m = 0; m < 20; ++m) {
+	for (int m = 0; m < 20 && !timer.isTimeOut(); ++m) {
 		if (neigh == Cost_time) {
 			for (int i = 0; i < output_->routines.size(); ++i) {
 				neighbour[i].second -= output_->routines[i].cost_time;
@@ -1438,7 +1439,8 @@ void Solver::test_treeSearch() {
     Time time = check_solution(output_->routines, aux);
     int count = 0;
     clock_t start = clock();
-    for (; car < car_size; ++car) {
+    cout << "begin test tree search" << endl;
+    for (; car < 10; ++car) {
         Log(log_out) << "car:" << car << endl;
         Time lb = min_time_cost(car, ins_->raw_cars[car].from, ins_->raw_cars[car].to);
         Log(log_out) << "time low bound:" << lb << endl;
@@ -1488,7 +1490,7 @@ void Solver::smooth_road_condition() {
 // 在给定的出发时间下，根据实际路况为单个车辆规划最优行驶路径。
 Time Solver::priority_first_search(Time start_time, Car * car, List<ID> &roads)
 {
-    const int max_iter = INT_MAX;
+    const int max_iter = 100000;
     const int time_slice_num = time_road_condition.size();
     const ID from = car->from->raw_cross->id;
     const ID to = car->to->raw_cross->id;

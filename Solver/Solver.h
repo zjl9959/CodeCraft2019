@@ -8,6 +8,7 @@
 #include "Output.h"
 #include "Solution.h"
 #include "Topo.h"
+#include <chrono>
 namespace codecraft2019 {
 struct RAux {
 	RawCar *raw_car;
@@ -35,7 +36,7 @@ struct RoadCondition {
 class Solver {
 public:
     Solver(Instance *ins, Output *output, Environment *env, Configure *cfg) :
-        ins_(ins), output_(output), env_(env), cfg_(cfg) ,topo(ins),
+        ins_(ins), output_(output), env_(env), cfg_(cfg) ,topo(ins),timer(std::chrono::milliseconds(890*1000)),
 		aux(ins_->raw_crosses.size(),ins_->raw_roads.size()){
 		car_size = ins_->raw_cars.size();
 		road_size = ins_->raw_roads.size();
@@ -94,6 +95,7 @@ protected:
     Output* output_;
     Environment* env_;
     Configure* cfg_;
+    Timer timer;
 private:
 	Topo topo; 
 	Aux aux;
